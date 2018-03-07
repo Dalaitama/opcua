@@ -13,7 +13,7 @@
 
 package client;
 
-import server.types.CustomDataType;
+import com.bbv.opcua.sorter.server.types.CustomDataType;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
 import org.eclipse.milo.opcua.sdk.client.api.nodes.VariableNode;
 import org.eclipse.milo.opcua.stack.core.types.OpcUaBinaryDataTypeDictionary;

@@ -6,6 +6,7 @@
 
     <groupId>com.bbv.opcua</groupId>
     <artifactId>opcua</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
     <build>
@@ -21,6 +22,10 @@
             </plugin>
         </plugins>
     </build>
+    <modules>
+        <module>sorter</module>
+    </modules>
+    <dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.eclipse.milo</groupId>
@@ -64,6 +69,45 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.1.7</version>
+        </dependency>
+    </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.milo</groupId>
+            <artifactId>sdk-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.milo</groupId>
+            <artifactId>sdk-server</artifactId>
+        </dependency>
+
+
+        <!-- Redeclare our dependency on Bouncy Castle
+        because we use SelfSignedCertificateBuilder -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+        </dependency>
+
+        <!-- Redeclare our dependency on Bouncy Castle
+        because we use SelfSignedCertificateBuilder -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
         </dependency>
     </dependencies>
 

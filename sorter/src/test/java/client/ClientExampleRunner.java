@@ -13,8 +13,8 @@
 
 package client;
 
+import com.bbv.opcua.sorter.server.SorterServer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import server.ExampleServer;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
 import org.eclipse.milo.opcua.sdk.client.api.config.OpcUaClientConfig;
 import org.eclipse.milo.opcua.stack.client.UaTcpStackClient;
@@ -25,6 +25,7 @@ import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
 import org.eclipse.milo.opcua.stack.core.util.CryptoRestrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 import java.io.File;
 import java.security.Security;
@@ -48,13 +49,13 @@ public class ClientExampleRunner {
 
     private final CompletableFuture<OpcUaClient> future = new CompletableFuture<>();
 
-    private ExampleServer exampleServer;
+    private SorterServer exampleServer;
 
     private final ClientExample clientExample;
     private final boolean serverRequired;
 
     public ClientExampleRunner(ClientExample clientExample) throws Exception {
-        this(clientExample, false);
+        this(clientExample, true);
     }
 
     public ClientExampleRunner(ClientExample clientExample, boolean serverRequired) throws Exception {
@@ -62,7 +63,7 @@ public class ClientExampleRunner {
         this.serverRequired = serverRequired;
 
         if (serverRequired) {
-            exampleServer = new ExampleServer();
+            exampleServer = new SorterServer();
             exampleServer.startup().get();
         }
     }
@@ -73,7 +74,7 @@ public class ClientExampleRunner {
             throw new Exception("unable to create security dir: " + securityTempDir);
         }
         LoggerFactory.getLogger(getClass())
-            .info("security temp dir: {}", securityTempDir.getAbsolutePath());
+                .info("security temp dir: {}", securityTempDir.getAbsolutePath());
 
         KeyStoreLoader loader = new KeyStoreLoader().load(securityTempDir);
 
@@ -83,32 +84,32 @@ public class ClientExampleRunner {
 
         try {
             endpoints = UaTcpStackClient
-                .getEndpoints(clientExample.getEndpointUrl())
-                .get();
+                    .getEndpoints(clientExample.getEndpointUrl())
+                    .get();
         } catch (Throwable ex) {
             // try the explicit discovery endpoint as well
             String discoveryUrl = clientExample.getEndpointUrl() + "/discovery";
             logger.info("Trying explicit discovery URL: {}", discoveryUrl);
             endpoints = UaTcpStackClient
-                .getEndpoints(discoveryUrl)
-                .get();
+                    .getEndpoints(discoveryUrl)
+                    .get();
         }
 
         EndpointDescription endpoint = Arrays.stream(endpoints)
-            .filter(e -> e.getSecurityPolicyUri().equals(securityPolicy.getSecurityPolicyUri()))
-            .findFirst().orElseThrow(() -> new Exception("no desired endpoints returned"));
+                .filter(e -> e.getSecurityPolicyUri().equals(securityPolicy.getSecurityPolicyUri()))
+                .findFirst().orElseThrow(() -> new Exception("no desired endpoints returned"));
 
         logger.info("Using endpoint: {} [{}]", endpoint.getEndpointUrl(), securityPolicy);
 
         OpcUaClientConfig config = OpcUaClientConfig.builder()
-            .setApplicationName(LocalizedText.english("eclipse milo opc-ua client"))
-            .setApplicationUri("urn:eclipse:milo:examples:client")
-            .setCertificate(loader.getClientCertificate())
-            .setKeyPair(loader.getClientKeyPair())
-            .setEndpoint(endpoint)
-            .setIdentityProvider(clientExample.getIdentityProvider())
-            .setRequestTimeout(uint(5000))
-            .build();
+                .setApplicationName(LocalizedText.english("eclipse milo opc-ua client"))
+                .setApplicationUri("urn:eclipse:milo:examples:client")
+                .setCertificate(loader.getClientCertificate())
+                .setKeyPair(loader.getClientKeyPair())
+                .setEndpoint(endpoint)
+                .setIdentityProvider(clientExample.getIdentityProvider())
+                .setRequestTimeout(uint(5000))
+                .build();
 
         return new OpcUaClient(config);
     }

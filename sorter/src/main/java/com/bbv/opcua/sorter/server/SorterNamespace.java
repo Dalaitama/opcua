@@ -11,7 +11,7 @@
  *   http://www.eclipse.org/org/documents/edl-v10.html.
  */
 
-package server;
+package com.bbv.opcua.sorter.server;
 
 import com.google.common.collect.Lists;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
@@ -43,8 +43,8 @@ import org.eclipse.milo.opcua.stack.core.types.structured.WriteValue;
 import org.eclipse.milo.opcua.stack.core.util.FutureUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import server.methods.SqrtMethod;
-import server.types.CustomDataType;
+import com.bbv.opcua.sorter.server.methods.SqrtMethod;
+import com.bbv.opcua.sorter.server.types.CustomDataType;
 
 import java.lang.reflect.Array;
 import java.util.List;
@@ -55,7 +55,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.*;
 
-public class ExampleNamespace implements Namespace {
+public class SorterNamespace implements Namespace {
 
     public static final String NAMESPACE_URI = "urn:eclipse:milo:hello-world";
 
@@ -118,7 +118,7 @@ public class ExampleNamespace implements Namespace {
     private final OpcUaServer server;
     private final UShort namespaceIndex;
 
-    public ExampleNamespace(OpcUaServer server, UShort namespaceIndex) {
+    public SorterNamespace(OpcUaServer server, UShort namespaceIndex) {
         this.server = server;
         this.namespaceIndex = namespaceIndex;
 

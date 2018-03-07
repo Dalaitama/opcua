@@ -11,7 +11,7 @@
  *   http://www.eclipse.org/org/documents/edl-v10.html.
  */
 
-package server;
+package com.bbv.opcua.sorter.server;
 
 import com.google.common.collect.ImmutableList;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -41,7 +41,7 @@ import java.util.concurrent.CompletableFuture;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.eclipse.milo.opcua.sdk.server.api.config.OpcUaServerConfig.*;
 
-public class ExampleServer {
+public class SorterServer {
 
     static {
         CryptoRestrictions.remove();
@@ -51,7 +51,7 @@ public class ExampleServer {
     }
 
     public static void main(String[] args) throws Exception {
-        ExampleServer server = new ExampleServer();
+        SorterServer server = new SorterServer();
 
         server.startup().get();
 
@@ -64,7 +64,7 @@ public class ExampleServer {
 
     private final OpcUaServer server;
 
-    public ExampleServer() throws Exception {
+    public SorterServer() throws Exception {
         File securityTempDir = new File(System.getProperty("java.io.tmpdir"), "security");
         if (!securityTempDir.exists() && !securityTempDir.mkdirs()) {
             throw new Exception("unable to create security temp dir: " + securityTempDir);
@@ -149,8 +149,8 @@ public class ExampleServer {
         server = new OpcUaServer(serverConfig);
 
         server.getNamespaceManager().registerAndAdd(
-            ExampleNamespace.NAMESPACE_URI,
-            idx -> new ExampleNamespace(server, idx));
+            SorterNamespace.NAMESPACE_URI,
+            idx -> new SorterNamespace(server, idx));
     }
 
     public OpcUaServer getServer() {
