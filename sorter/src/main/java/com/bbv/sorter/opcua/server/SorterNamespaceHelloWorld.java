@@ -13,7 +13,7 @@
 
 package com.bbv.sorter.opcua.server;
 
-import com.bbv.sorter.opcua.server.methods.SqrtMethod;
+import com.bbv.sorter.opcua.server.methods.ChangeConveyorModeMethod;
 import com.bbv.sorter.opcua.server.types.CustomDataType;
 import com.google.common.collect.Lists;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
@@ -485,7 +485,7 @@ public class SorterNamespaceHelloWorld implements Namespace {
         try {
             AnnotationBasedInvocationHandler invocationHandler =
                 AnnotationBasedInvocationHandler.fromAnnotatedObject(
-                    server.getNodeMap(), new SqrtMethod());
+                    server.getNodeMap(), new ChangeConveyorModeMethod());
 
             methodNode.setProperty(UaMethodNode.InputArguments, invocationHandler.getInputArguments());
             methodNode.setProperty(UaMethodNode.OutputArguments, invocationHandler.getOutputArguments());

@@ -43,10 +43,12 @@ public class ReadConveyorVariableExample implements ClientExample {
         client.connect().get();
 
         UShort index = client.getNamespaceTable().getIndex("urn:bbv:fischer:color-sorter");
-        NodeId nodeId = new NodeId(index, "Sorter/Conveyor/Mode");
+        NodeId nodeId = new NodeId(index, "Sorter/Conveyor.Mode");
         printConveyorMode(client, index, nodeId);
 
         ConveyorFactory.createConveyor().start();
+
+        Thread.sleep(1000);
 
         printConveyorMode(client, index, nodeId);
 

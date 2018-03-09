@@ -13,6 +13,7 @@
 
 package com.bbv.sorter.opcua.server.methods;
 
+import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
 import org.eclipse.milo.opcua.sdk.server.annotations.UaInputArgument;
 import org.eclipse.milo.opcua.sdk.server.annotations.UaMethod;
 import org.eclipse.milo.opcua.sdk.server.annotations.UaOutputArgument;
@@ -21,7 +22,7 @@ import org.eclipse.milo.opcua.sdk.server.util.AnnotationBasedInvocationHandler.O
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SqrtMethod {
+public class ChangeConveyorModeMethod {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -30,19 +31,27 @@ public class SqrtMethod {
         InvocationContext context,
 
         @UaInputArgument(
-            name = "x",
-            description = "A value.")
-            Double x,
+            name = "mode",
+            description = "the wanted mode")
+            Boolean start,
 
         @UaOutputArgument(
-            name = "x_sqrt",
-            description = "The positive square root of x. If the argument is NaN or less than zero, the result is NaN.")
-            Out<Double> xSqrt) {
+            name = "result",
+            description = "True or False.")
+            Out<Boolean> result) {
 
-        System.out.println("sqrt(" + x.toString() + ")");
-        logger.debug("Invoking sqrt() method of Object '{}'", context.getObjectNode().getBrowseName().getName());
+        System.out.println("start(" + start.toString() + ")");
+        logger.debug("Invoking start() method of Object '{}'", context.getObjectNode().getBrowseName().getName());
 
-        xSqrt.set(Math.sqrt(x));
+        if (start){
+            ConveyorFactory.createConveyor().start();
+        }else{
+            ConveyorFactory.createConveyor().stop();
+
+        }
+
+        result.set(start);
+
     }
 
 }

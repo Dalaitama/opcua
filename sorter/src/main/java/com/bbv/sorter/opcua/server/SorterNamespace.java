@@ -14,7 +14,7 @@
 package com.bbv.sorter.opcua.server;
 
 import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
-import com.bbv.sorter.opcua.server.methods.SqrtMethod;
+import com.bbv.sorter.opcua.server.methods.ChangeConveyorModeMethod;
 import com.google.common.collect.Lists;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.sdk.core.Reference;
@@ -54,6 +54,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static com.bbv.sorter.opcua.server.utils.NodePredicates.isEqualVariableNode;
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.*;
 
 public class SorterNamespace implements Namespace {
@@ -133,16 +134,113 @@ public class SorterNamespace implements Namespace {
 
         try {
             UaFolderNode sorterFolder = createSorterFolder(server, namespaceIndex);
-            addConveyorNodes(sorterFolder);
-
-
-            addCustomDataTypeVariable(sorterFolder);
-
-            addCustomObjectTypeAndInstance(sorterFolder);
+            UaObjectNode instance = addConveyorObjectTypeAndInstance(sorterFolder);
+            addMethodNode(instance);
+            //addConveyorNodes(sorterFolder);
+            //addCustomDataTypeVariable(sorterFolder);
         } catch (UaException e) {
             logger.error("Error adding nodes: {}", e.getMessage(), e);
         }
     }
+
+    private UaObjectNode addConveyorObjectTypeAndInstance(UaFolderNode sorterFolder) throws UaException {
+        // Define a new ObjectType called "ConveyorType".
+        UaObjectTypeNode conveyorTypeNode = UaObjectTypeNode.builder(server.getNodeMap())
+                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/ConveyorType"))
+                .setBrowseName(new QualifiedName(namespaceIndex, "ConveyorType"))
+                .setDisplayName(LocalizedText.english("ConveyorType"))
+                .setIsAbstract(false)
+                .build();
+
+        // "Mode" and "Status" are members. These nodes are what are called "instance declarations" by the spec.
+        UaVariableNode conveyorTypeVariableNodeMode = UaVariableNode.builder(server.getNodeMap())
+                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/ConveyorType.Mode"))
+                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                .setBrowseName(new QualifiedName(namespaceIndex, "Mode"))
+                .setDisplayName(LocalizedText.english("Mode"))
+                .setDataType(Identifiers.Boolean)
+                .setTypeDefinition(Identifiers.BaseDataVariableType)
+                .build();
+
+        conveyorTypeVariableNodeMode.setValue(new DataValue(new Variant(false)));
+        conveyorTypeVariableNodeMode.setMinimumSamplingInterval(1.0);
+        conveyorTypeNode.addComponent(conveyorTypeVariableNodeMode);
+
+
+        UaVariableNode conveyorTypeVariableNodeStatus = UaVariableNode.builder(server.getNodeMap())
+                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/ConveyorType.Status"))
+                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                .setBrowseName(new QualifiedName(namespaceIndex, "Status"))
+                .setDisplayName(LocalizedText.english("Status"))
+                .setDataType(Identifiers.Boolean)
+                .setTypeDefinition(Identifiers.BaseDataVariableType)
+                .build();
+
+        conveyorTypeVariableNodeStatus.setValue(new DataValue(new Variant(false)));
+        conveyorTypeVariableNodeStatus.setMinimumSamplingInterval(1.0);
+        conveyorTypeNode.addComponent(conveyorTypeVariableNodeStatus);
+
+        // Tell the ObjectTypeManager about our new type.
+        // This let's us use NodeFactory to instantiate instances of the type.
+        server.getObjectTypeManager().registerObjectType(
+                conveyorTypeNode.getNodeId(),
+                UaObjectNode.class,
+                UaObjectNode::new
+        );
+
+        // Add our ObjectTypeNode as a subtype of BaseObjectType.
+        server.getUaNamespace().addReference(
+                Identifiers.BaseObjectType,
+                Identifiers.HasSubtype,
+                true,
+                conveyorTypeNode.getNodeId().expanded(),
+                NodeClass.ObjectType
+        );
+
+        // Add the inverse SubtypeOf relationship.
+        conveyorTypeNode.addReference(new Reference(
+                conveyorTypeNode.getNodeId(),
+                Identifiers.HasSubtype,
+                Identifiers.BaseObjectType.expanded(),
+                NodeClass.ObjectType,
+                false
+        ));
+
+        // Add it into the address space.
+        server.getNodeMap().addNode(conveyorTypeNode);
+
+        // Use NodeFactory to create instance of MyObjectType called "MyObject".
+        // NodeFactory takes care of recursively instantiating MyObject member nodes
+        // as well as adding all nodes to the address space.
+        UaObjectNode conveyor = nodeFactory.createObject(
+                new NodeId(namespaceIndex, "Sorter/Conveyor"),
+                new QualifiedName(namespaceIndex, "Conveyor"),
+                LocalizedText.english("Conveyor"),
+                conveyorTypeNode.getNodeId()
+        );
+
+        conveyor.getComponentNodes().stream()
+                .filter(isEqualVariableNode(conveyorTypeVariableNodeMode))
+                .forEach(variable -> ((UaVariableNode) variable).setAttributeDelegate(getModeAttributeDelegate()));
+        conveyor.getComponentNodes().stream()
+                .filter(isEqualVariableNode(conveyorTypeVariableNodeStatus))
+                .forEach(variable -> ((UaVariableNode) variable).setAttributeDelegate(getStatusAttributeDelegate()));
+
+
+        // Add forward and inverse references from the root folder.
+        sorterFolder.addOrganizes(conveyor);
+
+        conveyor.addReference(new Reference(
+                conveyor.getNodeId(),
+                Identifiers.Organizes,
+                sorterFolder.getNodeId().expanded(),
+                sorterFolder.getNodeClass(),
+                false
+        ));
+
+        return conveyor;
+    }
+
 
     private void addConveyorNodes(UaFolderNode sorterFolder) {
         UaFolderNode conveyorFolder = createConveyorNode(sorterFolder);
@@ -261,6 +359,7 @@ public class SorterNamespace implements Namespace {
         return node;
     }
 
+
     private AttributeDelegate getModeAttributeDelegate() {
         return new AttributeDelegate() {
             @Override
@@ -310,20 +409,20 @@ public class SorterNamespace implements Namespace {
         dataAccessFolder.addOrganizes(node);
     }
 
-    private void addMethodNode(UaFolderNode folderNode) {
+    private void addMethodNode(UaObjectNode objectNode) {
         UaMethodNode methodNode = UaMethodNode.builder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "Sorter/sqrt(x)"))
-                .setBrowseName(new QualifiedName(namespaceIndex, "sqrt(x)"))
-                .setDisplayName(new LocalizedText(null, "sqrt(x)"))
+                .setNodeId(new NodeId(namespaceIndex, "Sorter/Conveyor/start"))
+                .setBrowseName(new QualifiedName(namespaceIndex, "start"))
+                .setDisplayName(new LocalizedText(null, "start"))
                 .setDescription(
-                        LocalizedText.english("Returns the correctly rounded positive square root of a double value."))
+                        LocalizedText.english("Start the Conveyor"))
                 .build();
 
 
         try {
             AnnotationBasedInvocationHandler invocationHandler =
                     AnnotationBasedInvocationHandler.fromAnnotatedObject(
-                            server.getNodeMap(), new SqrtMethod());
+                            server.getNodeMap(), new ChangeConveyorModeMethod());
 
             methodNode.setProperty(UaMethodNode.InputArguments, invocationHandler.getInputArguments());
             methodNode.setProperty(UaMethodNode.OutputArguments, invocationHandler.getOutputArguments());
@@ -331,8 +430,8 @@ public class SorterNamespace implements Namespace {
 
             server.getNodeMap().addNode(methodNode);
 
-            folderNode.addReference(new Reference(
-                    folderNode.getNodeId(),
+            objectNode.addReference(new Reference(
+                    objectNode.getNodeId(),
                     Identifiers.HasComponent,
                     methodNode.getNodeId().expanded(),
                     methodNode.getNodeClass(),
@@ -342,8 +441,8 @@ public class SorterNamespace implements Namespace {
             methodNode.addReference(new Reference(
                     methodNode.getNodeId(),
                     Identifiers.HasComponent,
-                    folderNode.getNodeId().expanded(),
-                    folderNode.getNodeClass(),
+                    objectNode.getNodeId().expanded(),
+                    objectNode.getNodeClass(),
                     false
             ));
         } catch (Exception e) {
@@ -351,90 +450,6 @@ public class SorterNamespace implements Namespace {
         }
     }
 
-    private void addCustomObjectTypeAndInstance(UaFolderNode rootFolder) throws UaException {
-        // Define a new ObjectType called "MyObjectType".
-        UaObjectTypeNode objectTypeNode = UaObjectTypeNode.builder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/MyObjectType"))
-                .setBrowseName(new QualifiedName(namespaceIndex, "MyObjectType"))
-                .setDisplayName(LocalizedText.english("MyObjectType"))
-                .setIsAbstract(false)
-                .build();
-
-        // "Foo" and "Bar" are members. These nodes are what are called "instance declarations" by the spec.
-        UaVariableNode foo = UaVariableNode.builder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/MyObjectType.Foo"))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, "Foo"))
-                .setDisplayName(LocalizedText.english("Foo"))
-                .setDataType(Identifiers.Int16)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
-
-        foo.setValue(new DataValue(new Variant(0)));
-        objectTypeNode.addComponent(foo);
-
-        UaVariableNode bar = UaVariableNode.builder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/MyObjectType.Bar"))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, "Bar"))
-                .setDisplayName(LocalizedText.english("Bar"))
-                .setDataType(Identifiers.String)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
-
-        bar.setValue(new DataValue(new Variant("bar")));
-        objectTypeNode.addComponent(bar);
-
-        // Tell the ObjectTypeManager about our new type.
-        // This let's us use NodeFactory to instantiate instances of the type.
-        server.getObjectTypeManager().registerObjectType(
-                objectTypeNode.getNodeId(),
-                UaObjectNode.class,
-                UaObjectNode::new
-        );
-
-        // Add our ObjectTypeNode as a subtype of BaseObjectType.
-        server.getUaNamespace().addReference(
-                Identifiers.BaseObjectType,
-                Identifiers.HasSubtype,
-                true,
-                objectTypeNode.getNodeId().expanded(),
-                NodeClass.ObjectType
-        );
-
-        // Add the inverse SubtypeOf relationship.
-        objectTypeNode.addReference(new Reference(
-                objectTypeNode.getNodeId(),
-                Identifiers.HasSubtype,
-                Identifiers.BaseObjectType.expanded(),
-                NodeClass.ObjectType,
-                false
-        ));
-
-        // Add it into the address space.
-        server.getNodeMap().addNode(objectTypeNode);
-
-        // Use NodeFactory to create instance of MyObjectType called "MyObject".
-        // NodeFactory takes care of recursively instantiating MyObject member nodes
-        // as well as adding all nodes to the address space.
-        UaObjectNode myObject = nodeFactory.createObject(
-                new NodeId(namespaceIndex, "Sorter/MyObject"),
-                new QualifiedName(namespaceIndex, "MyObject"),
-                LocalizedText.english("MyObject"),
-                objectTypeNode.getNodeId()
-        );
-
-        // Add forward and inverse references from the root folder.
-        rootFolder.addOrganizes(myObject);
-
-        myObject.addReference(new Reference(
-                myObject.getNodeId(),
-                Identifiers.Organizes,
-                rootFolder.getNodeId().expanded(),
-                rootFolder.getNodeClass(),
-                false
-        ));
-    }
 
     private void addCustomDataTypeVariable(UaFolderNode rootFolder) {
         // add a custom DataTypeNode as a subtype of the built-in Structure DataTypeNode

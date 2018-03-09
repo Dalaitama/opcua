@@ -17,7 +17,6 @@ import client.ClientExample;
 import client.ClientExampleRunner;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
 import org.eclipse.milo.opcua.sdk.client.api.nodes.Node;
-import org.eclipse.milo.opcua.stack.core.Identifiers;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.slf4j.Logger;
@@ -27,10 +26,10 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class BrowseConveyorModeVariableExample implements ClientExample {
+public class BrowseSorterFolderExample implements ClientExample {
 
     public static void main(String[] args) throws Exception {
-        BrowseConveyorModeVariableExample example = new BrowseConveyorModeVariableExample();
+        BrowseSorterFolderExample example = new BrowseSorterFolderExample();
 
         new ClientExampleRunner(example).run();
     }
@@ -43,7 +42,7 @@ public class BrowseConveyorModeVariableExample implements ClientExample {
         client.connect().get();
 
         UShort index = client.getNamespaceTable().getIndex("urn:bbv:fischer:color-sorter");
-        NodeId nodeId = new NodeId(index, "Sorter/Conveyor");
+        NodeId nodeId = new NodeId(index, "Sorter");
 
         // start browsing at root folder
         browseNode("", client, nodeId);
