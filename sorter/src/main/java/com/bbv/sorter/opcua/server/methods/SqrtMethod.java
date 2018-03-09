@@ -11,7 +11,7 @@
  *   http://www.eclipse.org/org/documents/edl-v10.html.
  */
 
-package com.bbv.opcua.sorter.server.methods;
+package com.bbv.sorter.opcua.server.methods;
 
 import org.eclipse.milo.opcua.sdk.server.annotations.UaInputArgument;
 import org.eclipse.milo.opcua.sdk.server.annotations.UaMethod;

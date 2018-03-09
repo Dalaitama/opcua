@@ -13,7 +13,7 @@
 
 package client;
 
-import com.bbv.opcua.sorter.server.SorterServer;
+import com.bbv.sorter.opcua.server.SorterServer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
 import org.eclipse.milo.opcua.sdk.client.api.config.OpcUaClientConfig;

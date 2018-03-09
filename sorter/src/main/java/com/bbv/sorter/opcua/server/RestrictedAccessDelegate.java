@@ -11,7 +11,7 @@
  *   http://www.eclipse.org/org/documents/edl-v10.html.
  */
 
-package com.bbv.opcua.sorter.server;
+package com.bbv.sorter.opcua.server;
 
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.sdk.server.Session;
