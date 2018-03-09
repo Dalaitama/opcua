@@ -13,6 +13,7 @@
 
 package com.bbv.sorter.opcua.server;
 
+import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
 import com.bbv.sorter.opcua.server.methods.SqrtMethod;
 import com.google.common.collect.Lists;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
@@ -60,50 +61,50 @@ public class SorterNamespace implements Namespace {
     public static final String NAMESPACE_URI = "urn:bbv:fischer:color-sorter";
 
     private static final Object[][] STATIC_SCALAR_NODES = new Object[][]{
-        {"Boolean", Identifiers.Boolean, new Variant(false)},
-        {"Byte", Identifiers.Byte, new Variant(ubyte(0x00))},
-        {"SByte", Identifiers.SByte, new Variant((byte) 0x00)},
-        {"Int16", Identifiers.Int16, new Variant((short) 16)},
-        {"Int32", Identifiers.Int32, new Variant(32)},
-        {"Int64", Identifiers.Int64, new Variant(64L)},
-        {"UInt16", Identifiers.UInt16, new Variant(ushort(16))},
-        {"UInt32", Identifiers.UInt32, new Variant(uint(32))},
-        {"UInt64", Identifiers.UInt64, new Variant(ulong(64L))},
-        {"Float", Identifiers.Float, new Variant(3.14f)},
-        {"Double", Identifiers.Double, new Variant(3.14d)},
-        {"String", Identifiers.String, new Variant("string value")},
-        {"DateTime", Identifiers.DateTime, new Variant(DateTime.now())},
-        {"Guid", Identifiers.Guid, new Variant(UUID.randomUUID())},
-        {"ByteString", Identifiers.ByteString, new Variant(new ByteString(new byte[]{0x01, 0x02, 0x03, 0x04}))},
-        {"XmlElement", Identifiers.XmlElement, new Variant(new XmlElement("<a>hello</a>"))},
-        {"LocalizedText", Identifiers.LocalizedText, new Variant(LocalizedText.english("localized text"))},
-        {"QualifiedName", Identifiers.QualifiedName, new Variant(new QualifiedName(1234, "defg"))},
-        {"NodeId", Identifiers.NodeId, new Variant(new NodeId(1234, "abcd"))},
+            {"Boolean", Identifiers.Boolean, new Variant(false)},
+            {"Byte", Identifiers.Byte, new Variant(ubyte(0x00))},
+            {"SByte", Identifiers.SByte, new Variant((byte) 0x00)},
+            {"Int16", Identifiers.Int16, new Variant((short) 16)},
+            {"Int32", Identifiers.Int32, new Variant(32)},
+            {"Int64", Identifiers.Int64, new Variant(64L)},
+            {"UInt16", Identifiers.UInt16, new Variant(ushort(16))},
+            {"UInt32", Identifiers.UInt32, new Variant(uint(32))},
+            {"UInt64", Identifiers.UInt64, new Variant(ulong(64L))},
+            {"Float", Identifiers.Float, new Variant(3.14f)},
+            {"Double", Identifiers.Double, new Variant(3.14d)},
+            {"String", Identifiers.String, new Variant("string value")},
+            {"DateTime", Identifiers.DateTime, new Variant(DateTime.now())},
+            {"Guid", Identifiers.Guid, new Variant(UUID.randomUUID())},
+            {"ByteString", Identifiers.ByteString, new Variant(new ByteString(new byte[]{0x01, 0x02, 0x03, 0x04}))},
+            {"XmlElement", Identifiers.XmlElement, new Variant(new XmlElement("<a>hello</a>"))},
+            {"LocalizedText", Identifiers.LocalizedText, new Variant(LocalizedText.english("localized text"))},
+            {"QualifiedName", Identifiers.QualifiedName, new Variant(new QualifiedName(1234, "defg"))},
+            {"NodeId", Identifiers.NodeId, new Variant(new NodeId(1234, "abcd"))},
 
-        {"Duration", Identifiers.Duration, new Variant(1.0)},
-        {"UtcTime", Identifiers.UtcTime, new Variant(DateTime.now())},
+            {"Duration", Identifiers.Duration, new Variant(1.0)},
+            {"UtcTime", Identifiers.UtcTime, new Variant(DateTime.now())},
     };
 
     private static final Object[][] STATIC_ARRAY_NODES = new Object[][]{
-        {"BooleanArray", Identifiers.Boolean, false},
-        {"ByteArray", Identifiers.Byte, ubyte(0)},
-        {"SByteArray", Identifiers.SByte, (byte) 0x00},
-        {"Int16Array", Identifiers.Int16, (short) 16},
-        {"Int32Array", Identifiers.Int32, 32},
-        {"Int64Array", Identifiers.Int64, 64L},
-        {"UInt16Array", Identifiers.UInt16, ushort(16)},
-        {"UInt32Array", Identifiers.UInt32, uint(32)},
-        {"UInt64Array", Identifiers.UInt64, ulong(64L)},
-        {"FloatArray", Identifiers.Float, 3.14f},
-        {"DoubleArray", Identifiers.Double, 3.14d},
-        {"StringArray", Identifiers.String, "string value"},
-        {"DateTimeArray", Identifiers.DateTime, new Variant(DateTime.now())},
-        {"GuidArray", Identifiers.Guid, new Variant(UUID.randomUUID())},
-        {"ByteStringArray", Identifiers.ByteString, new Variant(new ByteString(new byte[]{0x01, 0x02, 0x03, 0x04}))},
-        {"XmlElementArray", Identifiers.XmlElement, new Variant(new XmlElement("<a>hello</a>"))},
-        {"LocalizedTextArray", Identifiers.LocalizedText, new Variant(LocalizedText.english("localized text"))},
-        {"QualifiedNameArray", Identifiers.QualifiedName, new Variant(new QualifiedName(1234, "defg"))},
-        {"NodeIdArray", Identifiers.NodeId, new Variant(new NodeId(1234, "abcd"))}
+            {"BooleanArray", Identifiers.Boolean, false},
+            {"ByteArray", Identifiers.Byte, ubyte(0)},
+            {"SByteArray", Identifiers.SByte, (byte) 0x00},
+            {"Int16Array", Identifiers.Int16, (short) 16},
+            {"Int32Array", Identifiers.Int32, 32},
+            {"Int64Array", Identifiers.Int64, 64L},
+            {"UInt16Array", Identifiers.UInt16, ushort(16)},
+            {"UInt32Array", Identifiers.UInt32, uint(32)},
+            {"UInt64Array", Identifiers.UInt64, ulong(64L)},
+            {"FloatArray", Identifiers.Float, 3.14f},
+            {"DoubleArray", Identifiers.Double, 3.14d},
+            {"StringArray", Identifiers.String, "string value"},
+            {"DateTimeArray", Identifiers.DateTime, new Variant(DateTime.now())},
+            {"GuidArray", Identifiers.Guid, new Variant(UUID.randomUUID())},
+            {"ByteStringArray", Identifiers.ByteString, new Variant(new ByteString(new byte[]{0x01, 0x02, 0x03, 0x04}))},
+            {"XmlElementArray", Identifiers.XmlElement, new Variant(new XmlElement("<a>hello</a>"))},
+            {"LocalizedTextArray", Identifiers.LocalizedText, new Variant(LocalizedText.english("localized text"))},
+            {"QualifiedNameArray", Identifiers.QualifiedName, new Variant(new QualifiedName(1234, "defg"))},
+            {"NodeIdArray", Identifiers.NodeId, new Variant(new NodeId(1234, "abcd"))}
     };
 
 
@@ -125,9 +126,9 @@ public class SorterNamespace implements Namespace {
         subscriptionModel = new SubscriptionModel(server, this);
 
         nodeFactory = new NodeFactory(
-            server.getNodeMap(),
-            server.getObjectTypeManager(),
-            server.getVariableTypeManager()
+                server.getNodeMap(),
+                server.getObjectTypeManager(),
+                server.getVariableTypeManager()
         );
 
         try {
@@ -144,9 +145,23 @@ public class SorterNamespace implements Namespace {
     }
 
     private void addConveyorNodes(UaFolderNode sorterFolder) {
-        addDynamicNodes(sorterFolder);
+        UaFolderNode conveyorFolder = createConveyorNode(sorterFolder);
+        addConveyorVariableNodes(conveyorFolder);
+        addMethodNode(conveyorFolder);
         addDataAccessNodes(sorterFolder);
-        addMethodNode(sorterFolder);
+    }
+
+    private UaFolderNode createConveyorNode(UaFolderNode sorterNode) {
+        UaFolderNode conveyorFolder = new UaFolderNode(
+                server.getNodeMap(),
+                new NodeId(namespaceIndex, "Sorter/Conveyor"),
+                new QualifiedName(namespaceIndex, "Conveyor"),
+                LocalizedText.english("Conveyor")
+        );
+
+        server.getNodeMap().addNode(conveyorFolder);
+        sorterNode.addOrganizes(conveyorFolder);
+        return conveyorFolder;
     }
 
     private UaFolderNode createSorterFolder(OpcUaServer server, UShort namespaceIndex) throws UaException {
@@ -154,21 +169,21 @@ public class SorterNamespace implements Namespace {
         NodeId folderNodeId = new NodeId(namespaceIndex, "Sorter");
 
         UaFolderNode folderNode = new UaFolderNode(
-            server.getNodeMap(),
-            folderNodeId,
-            new QualifiedName(namespaceIndex, "Sorter"),
-            LocalizedText.english("Sorter")
+                server.getNodeMap(),
+                folderNodeId,
+                new QualifiedName(namespaceIndex, "Sorter"),
+                LocalizedText.english("Sorter")
         );
 
         server.getNodeMap().addNode(folderNode);
 
         // Make sure our new folder shows up under the server's Objects folder
         server.getUaNamespace().addReference(
-            Identifiers.ObjectsFolder,
-            Identifiers.Organizes,
-            true,
-            folderNodeId.expanded(),
-            NodeClass.Object
+                Identifiers.ObjectsFolder,
+                Identifiers.Organizes,
+                true,
+                folderNodeId.expanded(),
+                NodeClass.Object
         );
         return folderNode;
     }
@@ -184,127 +199,94 @@ public class SorterNamespace implements Namespace {
     }
 
 
+    private void addConveyorVariableNodes(UaFolderNode conveyorFolder) {
 
 
-
-    private void addDynamicNodes(UaFolderNode rootNode) {
-        UaFolderNode dynamicFolder = new UaFolderNode(
-            server.getNodeMap(),
-            new NodeId(namespaceIndex, "Sorter/Dynamic"),
-            new QualifiedName(namespaceIndex, "Dynamic"),
-            LocalizedText.english("Dynamic")
-        );
-
-        server.getNodeMap().addNode(dynamicFolder);
-        rootNode.addOrganizes(dynamicFolder);
-
-        // Dynamic Boolean
+        // Mode
         {
-            String name = "Boolean";
+            String name = "Mode";
             NodeId typeId = Identifiers.Boolean;
+            //NodeId typeId = Identifiers.StateVariableType;
+            AttributeDelegate modeAttributeDelegate = getModeAttributeDelegate();
+            double minimumSamplingInterval = 1.0;
             Variant variant = new Variant(false);
 
-            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "Sorter/Dynamic/" + name))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, name))
-                .setDisplayName(LocalizedText.english(name))
-                .setDataType(typeId)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
+            UaVariableNode conveyorModeNode = createConveyorVariableNode(name, typeId, modeAttributeDelegate, minimumSamplingInterval, variant);
 
-            node.setValue(new DataValue(variant));
+            server.getNodeMap().addNode(conveyorModeNode);
+            conveyorFolder.addOrganizes(conveyorModeNode);
 
-            AttributeDelegate delegate = AttributeDelegateChain.create(
-                new AttributeDelegate() {
-                    @Override
-                    public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                        return new DataValue(new Variant(random.nextBoolean()));
-                    }
-                },
-                 ValueLoggingDelegate::new
-            );
 
-            node.setAttributeDelegate(delegate);
-
-            server.getNodeMap().addNode(node);
-            dynamicFolder.addOrganizes(node);
         }
 
-        // Dynamic Int32
+        // Mode
         {
-            String name = "Int32";
-            NodeId typeId = Identifiers.Int32;
-            Variant variant = new Variant(0);
+            String name = "Status";
+            NodeId typeId = Identifiers.Boolean;
+            //NodeId typeId = Identifiers.StateVariableType;
+            AttributeDelegate statusAttributeDelegate = getStatusAttributeDelegate();
+            double minimumSamplingInterval = 1.0;
+            Variant variant = new Variant(false);
 
-            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "Sorter/Dynamic/" + name))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, name))
-                .setDisplayName(LocalizedText.english(name))
-                .setDataType(typeId)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
+            UaVariableNode conveyorStatusNode = createConveyorVariableNode(name, typeId, statusAttributeDelegate, minimumSamplingInterval, variant);
 
-            node.setValue(new DataValue(variant));
+            server.getNodeMap().addNode(conveyorStatusNode);
+            conveyorFolder.addOrganizes(conveyorStatusNode);
 
-            AttributeDelegate delegate = AttributeDelegateChain.create(
-                new AttributeDelegate() {
-                    @Override
-                    public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                        return new DataValue(new Variant(random.nextInt()));
-                    }
-                },
-                 ValueLoggingDelegate::new
-            );
 
-            node.setAttributeDelegate(delegate);
-
-            server.getNodeMap().addNode(node);
-            dynamicFolder.addOrganizes(node);
         }
 
-        // Dynamic Double
-        {
-            String name = "Double";
-            NodeId typeId = Identifiers.Double;
-            Variant variant = new Variant(0.0);
 
-            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "Sorter/Dynamic/" + name))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, name))
-                .setDisplayName(LocalizedText.english(name))
-                .setDataType(typeId)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
-
-            node.setValue(new DataValue(variant));
-
-            AttributeDelegate delegate = AttributeDelegateChain.create(
-                new AttributeDelegate() {
-                    @Override
-                    public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                        return new DataValue(new Variant(random.nextDouble()));
-                    }
-                },
-                ValueLoggingDelegate::new
-            );
-
-            node.setAttributeDelegate(delegate);
-
-            server.getNodeMap().addNode(node);
-            dynamicFolder.addOrganizes(node);
-        }
     }
+
+    private UaVariableNode createConveyorVariableNode(String name, NodeId typeId, AttributeDelegate modeAttributeDelegate, double minimumSamplingInterval, Variant variant) {
+        UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
+                .setNodeId(new NodeId(namespaceIndex, "Sorter/Conveyor/" + name))
+                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                .setBrowseName(new QualifiedName(namespaceIndex, name))
+                .setDisplayName(LocalizedText.english(name))
+                .setDataType(typeId)
+                .setTypeDefinition(Identifiers.BaseDataVariableType)
+                .build();
+
+        node.setMinimumSamplingInterval(minimumSamplingInterval);
+
+        node.setValue(new DataValue(variant));
+
+
+        node.setAttributeDelegate(AttributeDelegateChain.create(
+                modeAttributeDelegate,
+                ValueLoggingDelegate::new
+        ));
+        return node;
+    }
+
+    private AttributeDelegate getModeAttributeDelegate() {
+        return new AttributeDelegate() {
+            @Override
+            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
+                return new DataValue(new Variant(ConveyorFactory.createConveyor().getMode()));
+            }
+        };
+    }
+
+    private AttributeDelegate getStatusAttributeDelegate() {
+        return new AttributeDelegate() {
+            @Override
+            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
+                return new DataValue(new Variant(ConveyorFactory.createConveyor().getStatus()));
+            }
+        };
+    }
+
 
     private void addDataAccessNodes(UaFolderNode rootNode) {
         // DataAccess folder
         UaFolderNode dataAccessFolder = new UaFolderNode(
-            server.getNodeMap(),
-            new NodeId(namespaceIndex, "Sorter/DataAccess"),
-            new QualifiedName(namespaceIndex, "DataAccess"),
-            LocalizedText.english("DataAccess")
+                server.getNodeMap(),
+                new NodeId(namespaceIndex, "Sorter/DataAccess"),
+                new QualifiedName(namespaceIndex, "DataAccess"),
+                LocalizedText.english("DataAccess")
         );
 
         server.getNodeMap().addNode(dataAccessFolder);
@@ -312,11 +294,11 @@ public class SorterNamespace implements Namespace {
 
         // AnalogItemType node
         AnalogItemNode node = nodeFactory.createVariable(
-            new NodeId(namespaceIndex, "Sorter/DataAccess/AnalogValue"),
-            new QualifiedName(namespaceIndex, "AnalogValue"),
-            LocalizedText.english("AnalogValue"),
-            Identifiers.AnalogItemType,
-            AnalogItemNode.class
+                new NodeId(namespaceIndex, "Sorter/DataAccess/AnalogValue"),
+                new QualifiedName(namespaceIndex, "AnalogValue"),
+                LocalizedText.english("AnalogValue"),
+                Identifiers.AnalogItemType,
+                AnalogItemNode.class
         );
 
         node.setDataType(Identifiers.Double);
@@ -330,18 +312,18 @@ public class SorterNamespace implements Namespace {
 
     private void addMethodNode(UaFolderNode folderNode) {
         UaMethodNode methodNode = UaMethodNode.builder(server.getNodeMap())
-            .setNodeId(new NodeId(namespaceIndex, "Sorter/sqrt(x)"))
-            .setBrowseName(new QualifiedName(namespaceIndex, "sqrt(x)"))
-            .setDisplayName(new LocalizedText(null, "sqrt(x)"))
-            .setDescription(
-                LocalizedText.english("Returns the correctly rounded positive square root of a double value."))
-            .build();
+                .setNodeId(new NodeId(namespaceIndex, "Sorter/sqrt(x)"))
+                .setBrowseName(new QualifiedName(namespaceIndex, "sqrt(x)"))
+                .setDisplayName(new LocalizedText(null, "sqrt(x)"))
+                .setDescription(
+                        LocalizedText.english("Returns the correctly rounded positive square root of a double value."))
+                .build();
 
 
         try {
             AnnotationBasedInvocationHandler invocationHandler =
-                AnnotationBasedInvocationHandler.fromAnnotatedObject(
-                    server.getNodeMap(), new SqrtMethod());
+                    AnnotationBasedInvocationHandler.fromAnnotatedObject(
+                            server.getNodeMap(), new SqrtMethod());
 
             methodNode.setProperty(UaMethodNode.InputArguments, invocationHandler.getInputArguments());
             methodNode.setProperty(UaMethodNode.OutputArguments, invocationHandler.getOutputArguments());
@@ -350,19 +332,19 @@ public class SorterNamespace implements Namespace {
             server.getNodeMap().addNode(methodNode);
 
             folderNode.addReference(new Reference(
-                folderNode.getNodeId(),
-                Identifiers.HasComponent,
-                methodNode.getNodeId().expanded(),
-                methodNode.getNodeClass(),
-                true
+                    folderNode.getNodeId(),
+                    Identifiers.HasComponent,
+                    methodNode.getNodeId().expanded(),
+                    methodNode.getNodeClass(),
+                    true
             ));
 
             methodNode.addReference(new Reference(
-                methodNode.getNodeId(),
-                Identifiers.HasComponent,
-                folderNode.getNodeId().expanded(),
-                folderNode.getNodeClass(),
-                false
+                    methodNode.getNodeId(),
+                    Identifiers.HasComponent,
+                    folderNode.getNodeId().expanded(),
+                    folderNode.getNodeClass(),
+                    false
             ));
         } catch (Exception e) {
             logger.error("Error creating sqrt() method.", e);
@@ -372,33 +354,33 @@ public class SorterNamespace implements Namespace {
     private void addCustomObjectTypeAndInstance(UaFolderNode rootFolder) throws UaException {
         // Define a new ObjectType called "MyObjectType".
         UaObjectTypeNode objectTypeNode = UaObjectTypeNode.builder(server.getNodeMap())
-            .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/MyObjectType"))
-            .setBrowseName(new QualifiedName(namespaceIndex, "MyObjectType"))
-            .setDisplayName(LocalizedText.english("MyObjectType"))
-            .setIsAbstract(false)
-            .build();
+                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/MyObjectType"))
+                .setBrowseName(new QualifiedName(namespaceIndex, "MyObjectType"))
+                .setDisplayName(LocalizedText.english("MyObjectType"))
+                .setIsAbstract(false)
+                .build();
 
         // "Foo" and "Bar" are members. These nodes are what are called "instance declarations" by the spec.
         UaVariableNode foo = UaVariableNode.builder(server.getNodeMap())
-            .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/MyObjectType.Foo"))
-            .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-            .setBrowseName(new QualifiedName(namespaceIndex, "Foo"))
-            .setDisplayName(LocalizedText.english("Foo"))
-            .setDataType(Identifiers.Int16)
-            .setTypeDefinition(Identifiers.BaseDataVariableType)
-            .build();
+                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/MyObjectType.Foo"))
+                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                .setBrowseName(new QualifiedName(namespaceIndex, "Foo"))
+                .setDisplayName(LocalizedText.english("Foo"))
+                .setDataType(Identifiers.Int16)
+                .setTypeDefinition(Identifiers.BaseDataVariableType)
+                .build();
 
         foo.setValue(new DataValue(new Variant(0)));
         objectTypeNode.addComponent(foo);
 
         UaVariableNode bar = UaVariableNode.builder(server.getNodeMap())
-            .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/MyObjectType.Bar"))
-            .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-            .setBrowseName(new QualifiedName(namespaceIndex, "Bar"))
-            .setDisplayName(LocalizedText.english("Bar"))
-            .setDataType(Identifiers.String)
-            .setTypeDefinition(Identifiers.BaseDataVariableType)
-            .build();
+                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/MyObjectType.Bar"))
+                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                .setBrowseName(new QualifiedName(namespaceIndex, "Bar"))
+                .setDisplayName(LocalizedText.english("Bar"))
+                .setDataType(Identifiers.String)
+                .setTypeDefinition(Identifiers.BaseDataVariableType)
+                .build();
 
         bar.setValue(new DataValue(new Variant("bar")));
         objectTypeNode.addComponent(bar);
@@ -406,27 +388,27 @@ public class SorterNamespace implements Namespace {
         // Tell the ObjectTypeManager about our new type.
         // This let's us use NodeFactory to instantiate instances of the type.
         server.getObjectTypeManager().registerObjectType(
-            objectTypeNode.getNodeId(),
-            UaObjectNode.class,
-            UaObjectNode::new
+                objectTypeNode.getNodeId(),
+                UaObjectNode.class,
+                UaObjectNode::new
         );
 
         // Add our ObjectTypeNode as a subtype of BaseObjectType.
         server.getUaNamespace().addReference(
-            Identifiers.BaseObjectType,
-            Identifiers.HasSubtype,
-            true,
-            objectTypeNode.getNodeId().expanded(),
-            NodeClass.ObjectType
+                Identifiers.BaseObjectType,
+                Identifiers.HasSubtype,
+                true,
+                objectTypeNode.getNodeId().expanded(),
+                NodeClass.ObjectType
         );
 
         // Add the inverse SubtypeOf relationship.
         objectTypeNode.addReference(new Reference(
-            objectTypeNode.getNodeId(),
-            Identifiers.HasSubtype,
-            Identifiers.BaseObjectType.expanded(),
-            NodeClass.ObjectType,
-            false
+                objectTypeNode.getNodeId(),
+                Identifiers.HasSubtype,
+                Identifiers.BaseObjectType.expanded(),
+                NodeClass.ObjectType,
+                false
         ));
 
         // Add it into the address space.
@@ -436,21 +418,21 @@ public class SorterNamespace implements Namespace {
         // NodeFactory takes care of recursively instantiating MyObject member nodes
         // as well as adding all nodes to the address space.
         UaObjectNode myObject = nodeFactory.createObject(
-            new NodeId(namespaceIndex, "Sorter/MyObject"),
-            new QualifiedName(namespaceIndex, "MyObject"),
-            LocalizedText.english("MyObject"),
-            objectTypeNode.getNodeId()
+                new NodeId(namespaceIndex, "Sorter/MyObject"),
+                new QualifiedName(namespaceIndex, "MyObject"),
+                LocalizedText.english("MyObject"),
+                objectTypeNode.getNodeId()
         );
 
         // Add forward and inverse references from the root folder.
         rootFolder.addOrganizes(myObject);
 
         myObject.addReference(new Reference(
-            myObject.getNodeId(),
-            Identifiers.Organizes,
-            rootFolder.getNodeId().expanded(),
-            rootFolder.getNodeClass(),
-            false
+                myObject.getNodeId(),
+                Identifiers.Organizes,
+                rootFolder.getNodeId().expanded(),
+                rootFolder.getNodeClass(),
+                false
         ));
     }
 
@@ -459,51 +441,51 @@ public class SorterNamespace implements Namespace {
         NodeId dataTypeId = new NodeId(namespaceIndex, "DataType.CustomDataType");
 
         UaDataTypeNode dataTypeNode = new UaDataTypeNode(
-            server.getNodeMap(),
-            dataTypeId,
-            new QualifiedName(namespaceIndex, "CustomDataType"),
-            LocalizedText.english("CustomDataType"),
-            LocalizedText.english("CustomDataType"),
-            uint(0),
-            uint(0),
-            false
+                server.getNodeMap(),
+                dataTypeId,
+                new QualifiedName(namespaceIndex, "CustomDataType"),
+                LocalizedText.english("CustomDataType"),
+                LocalizedText.english("CustomDataType"),
+                uint(0),
+                uint(0),
+                false
         );
 
         // Inverse ref to Structure
         dataTypeNode.addReference(new Reference(
-            dataTypeId,
-            Identifiers.HasSubtype,
-            Identifiers.Structure.expanded(),
-            NodeClass.DataType,
-            false
+                dataTypeId,
+                Identifiers.HasSubtype,
+                Identifiers.Structure.expanded(),
+                NodeClass.DataType,
+                false
         ));
 
         // Forward ref from Structure
         Optional<UaDataTypeNode> structureDataTypeNode = server.getNodeMap()
-            .getNode(Identifiers.Structure)
-            .map(UaDataTypeNode.class::cast);
+                .getNode(Identifiers.Structure)
+                .map(UaDataTypeNode.class::cast);
 
         structureDataTypeNode.ifPresent(node ->
-            node.addReference(new Reference(
-                node.getNodeId(),
-                Identifiers.HasSubtype,
-                dataTypeId.expanded(),
-                NodeClass.DataType,
-                true
-            ))
+                node.addReference(new Reference(
+                        node.getNodeId(),
+                        Identifiers.HasSubtype,
+                        dataTypeId.expanded(),
+                        NodeClass.DataType,
+                        true
+                ))
         );
 
         // Create a dictionary, binaryEncodingId, and register the codec under that id
         OpcUaBinaryDataTypeDictionary dictionary = new OpcUaBinaryDataTypeDictionary(
-            "urn:eclipse:milo:example:custom-data-type"
+                "urn:eclipse:milo:example:custom-data-type"
         );
 
         NodeId binaryEncodingId = new NodeId(namespaceIndex, "DataType.CustomDataType.BinaryEncoding");
 
         dictionary.registerStructCodec(
-            new CustomDataType.Codec().asBinaryCodec(),
-            "CustomDataType",
-            binaryEncodingId
+                new CustomDataType.Codec().asBinaryCodec(),
+                "CustomDataType",
+                binaryEncodingId
         );
 
         // Register dictionary with the shared DataTypeManager instance
@@ -511,19 +493,19 @@ public class SorterNamespace implements Namespace {
 
 
         UaVariableNode customDataTypeVariable = UaVariableNode.builder(server.getNodeMap())
-            .setNodeId(new NodeId(namespaceIndex, "Sorter/CustomDataTypeVariable"))
-            .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-            .setUserAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-            .setBrowseName(new QualifiedName(namespaceIndex, "CustomDataTypeVariable"))
-            .setDisplayName(LocalizedText.english("CustomDataTypeVariable"))
-            .setDataType(dataTypeId)
-            .setTypeDefinition(Identifiers.BaseDataVariableType)
-            .build();
+                .setNodeId(new NodeId(namespaceIndex, "Sorter/CustomDataTypeVariable"))
+                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                .setUserAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                .setBrowseName(new QualifiedName(namespaceIndex, "CustomDataTypeVariable"))
+                .setDisplayName(LocalizedText.english("CustomDataTypeVariable"))
+                .setDataType(dataTypeId)
+                .setTypeDefinition(Identifiers.BaseDataVariableType)
+                .build();
 
         CustomDataType value = new CustomDataType(
-            "foo",
-            uint(42),
-            true
+                "foo",
+                uint(42),
+                true
         );
 
         ExtensionObject xo = ExtensionObject.encode(value, binaryEncodingId);
@@ -533,11 +515,11 @@ public class SorterNamespace implements Namespace {
         rootFolder.addOrganizes(customDataTypeVariable);
 
         customDataTypeVariable.addReference(new Reference(
-            customDataTypeVariable.getNodeId(),
-            Identifiers.Organizes,
-            rootFolder.getNodeId().expanded(),
-            rootFolder.getNodeClass(),
-            false
+                customDataTypeVariable.getNodeId(),
+                Identifiers.Organizes,
+                rootFolder.getNodeId().expanded(),
+                rootFolder.getNodeClass(),
+                false
         ));
     }
 
@@ -701,10 +683,10 @@ public class SorterNamespace implements Namespace {
 
     @Override
     public void read(
-        ReadContext context,
-        Double maxAge,
-        TimestampsToReturn timestamps,
-        List<ReadValueId> readValueIds) {
+            ReadContext context,
+            Double maxAge,
+            TimestampsToReturn timestamps,
+            List<ReadValueId> readValueIds) {
 
         List<DataValue> results = Lists.newArrayListWithCapacity(readValueIds.size());
 
@@ -713,11 +695,11 @@ public class SorterNamespace implements Namespace {
 
             if (node != null) {
                 DataValue value = node.readAttribute(
-                    new AttributeContext(context),
-                    readValueId.getAttributeId(),
-                    timestamps,
-                    readValueId.getIndexRange(),
-                    readValueId.getDataEncoding()
+                        new AttributeContext(context),
+                        readValueId.getAttributeId(),
+                        timestamps,
+                        readValueId.getIndexRange(),
+                        readValueId.getDataEncoding()
                 );
 
                 results.add(value);
@@ -739,19 +721,19 @@ public class SorterNamespace implements Namespace {
             if (node != null) {
                 try {
                     node.writeAttribute(
-                        new AttributeContext(context),
-                        writeValue.getAttributeId(),
-                        writeValue.getValue(),
-                        writeValue.getIndexRange()
+                            new AttributeContext(context),
+                            writeValue.getAttributeId(),
+                            writeValue.getValue(),
+                            writeValue.getIndexRange()
                     );
 
                     results.add(StatusCode.GOOD);
 
                     logger.info(
-                        "Wrote value {} to {} attribute of {}",
-                        writeValue.getValue().getValue(),
-                        AttributeId.from(writeValue.getAttributeId()).map(Object::toString).orElse("unknown"),
-                        node.getNodeId());
+                            "Wrote value {} to {} attribute of {}",
+                            writeValue.getValue().getValue(),
+                            AttributeId.from(writeValue.getAttributeId()).map(Object::toString).orElse("unknown"),
+                            node.getNodeId());
                 } catch (UaException e) {
                     logger.error("Unable to write value={}", writeValue.getValue(), e);
                     results.add(e.getStatusCode());
