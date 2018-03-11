@@ -1,11 +1,16 @@
 package com.bbv.sorter.hardware.conveyor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Mock Class
  */
 public class ConveyorMock implements Conveyor {
 
     private static final Conveyor INSTANCE = new ConveyorMock();
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     volatile boolean status = false;
     volatile boolean mode = false;
@@ -30,11 +35,13 @@ public class ConveyorMock implements Conveyor {
 
     @Override
     public void start() {
+        logger.info("Conveyor Started");
         mode = true;
     }
 
     @Override
     public void stop() {
+        logger.info("Conveyor Stopped");
         mode = false;
     }
 }

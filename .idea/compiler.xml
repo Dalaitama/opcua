@@ -6,10 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="client" />
         <module name="sorter" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
+      <module name="client" target="1.8" />
       <module name="opcua" target="1.8" />
       <module name="sorter" target="1.8" />
     </bytecodeTargetLevel>

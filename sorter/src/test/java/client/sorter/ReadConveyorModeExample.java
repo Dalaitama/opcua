@@ -15,23 +15,24 @@ package client.sorter;
 
 import client.ClientExample;
 import client.ClientExampleRunner;
+import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
-import org.eclipse.milo.opcua.sdk.client.api.nodes.Node;
+import org.eclipse.milo.opcua.sdk.client.api.nodes.VariableNode;
+import org.eclipse.milo.opcua.sdk.client.model.nodes.variables.BaseDataVariableNode;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
+import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
-public class BrowseSorterFolderExample implements ClientExample {
+public class ReadConveyorModeExample implements ClientExample {
 
     public static void main(String[] args) throws Exception {
-        BrowseSorterFolderExample example = new BrowseSorterFolderExample();
+        ReadConveyorModeExample example = new ReadConveyorModeExample();
 
-        new ClientExampleRunner(example).run();
+        new ClientExampleRunner(example, true).run();
     }
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -42,27 +43,29 @@ public class BrowseSorterFolderExample implements ClientExample {
         client.connect().get();
 
         UShort index = client.getNamespaceTable().getIndex("urn:bbv:fischer:color-sorter");
-        NodeId nodeId = new NodeId(index, "Sorter");
+        NodeId nodeId = new NodeId(index, "Sorter/Conveyor.Mode");
+        printConveyorMode(client, index, nodeId);
 
-        // start browsing at root folder
-        browseNode("", client, nodeId);
+        ConveyorFactory.createConveyor().start();
+
+        Thread.sleep(1000);
+
+        printConveyorMode(client, index, nodeId);
+
 
         future.complete(client);
     }
 
-    private void browseNode(String indent, OpcUaClient client, NodeId browseRoot) {
-        try {
-            List<Node> nodes = client.getAddressSpace().browse(browseRoot).get();
+    private void printConveyorMode(OpcUaClient client, UShort index, NodeId nodeId) throws InterruptedException, java.util.concurrent.ExecutionException {
+        BaseDataVariableNode conveyorModeNode = client.getAddressSpace().getVariableNode(
+                nodeId,
+                BaseDataVariableNode.class
+        ).get();
 
-            for (Node node : nodes) {
-                logger.info("{} Node={}", indent, node.getBrowseName().get().getName());
+        CompletableFuture<? extends VariableNode> variableComponent = conveyorModeNode.getVariableComponent(new QualifiedName(index, "Sorter/Conveyor/Mode"));
 
-                // recursively browse to children
-                browseNode(indent + "  ", client, node.getNodeId().get());
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Browsing nodeId={} failed: {}", browseRoot, e.getMessage(), e);
-        }
+
+        logger.error("ServerStatus.conveyorModeNode={}", conveyorModeNode.getValue().get());
     }
 
 }

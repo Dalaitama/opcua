@@ -15,6 +15,7 @@ package client.sorter;
 
 import client.ClientExample;
 import client.ClientExampleRunner;
+import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
@@ -33,6 +34,8 @@ public class MethodExample implements ClientExample {
 
     public static void main(String[] args) throws Exception {
         MethodExample example = new MethodExample();
+
+
 
         new ClientExampleRunner(example).run();
     }
@@ -62,8 +65,8 @@ public class MethodExample implements ClientExample {
 
 
         CallMethodRequest request = new CallMethodRequest(
-            objectId, methodId, new Variant[]{new Variant(input)});
-            //    objectId, methodId, null);
+                objectId, methodId, new Variant[]{new Variant(input)});
+        //    objectId, methodId, null);
 
         return client.call(request).thenCompose(result -> {
             StatusCode statusCode = result.getStatusCode();

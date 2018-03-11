@@ -111,7 +111,6 @@ public class SorterNamespace implements Namespace {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Random random = new Random();
 
     private final SubscriptionModel subscriptionModel;
 
@@ -242,25 +241,9 @@ public class SorterNamespace implements Namespace {
     }
 
 
-    private void addConveyorNodes(UaFolderNode sorterFolder) {
-        UaFolderNode conveyorFolder = createConveyorNode(sorterFolder);
-        addConveyorVariableNodes(conveyorFolder);
-        addMethodNode(conveyorFolder);
-        addDataAccessNodes(sorterFolder);
-    }
 
-    private UaFolderNode createConveyorNode(UaFolderNode sorterNode) {
-        UaFolderNode conveyorFolder = new UaFolderNode(
-                server.getNodeMap(),
-                new NodeId(namespaceIndex, "Sorter/Conveyor"),
-                new QualifiedName(namespaceIndex, "Conveyor"),
-                LocalizedText.english("Conveyor")
-        );
 
-        server.getNodeMap().addNode(conveyorFolder);
-        sorterNode.addOrganizes(conveyorFolder);
-        return conveyorFolder;
-    }
+
 
     private UaFolderNode createSorterFolder(OpcUaServer server, UShort namespaceIndex) throws UaException {
         // Create a "Sorter" folder and add it to the node manager
@@ -284,129 +267,6 @@ public class SorterNamespace implements Namespace {
                 NodeClass.Object
         );
         return folderNode;
-    }
-
-    @Override
-    public UShort getNamespaceIndex() {
-        return namespaceIndex;
-    }
-
-    @Override
-    public String getNamespaceUri() {
-        return NAMESPACE_URI;
-    }
-
-
-    private void addConveyorVariableNodes(UaFolderNode conveyorFolder) {
-
-
-        // Mode
-        {
-            String name = "Mode";
-            NodeId typeId = Identifiers.Boolean;
-            //NodeId typeId = Identifiers.StateVariableType;
-            AttributeDelegate modeAttributeDelegate = getModeAttributeDelegate();
-            double minimumSamplingInterval = 1.0;
-            Variant variant = new Variant(false);
-
-            UaVariableNode conveyorModeNode = createConveyorVariableNode(name, typeId, modeAttributeDelegate, minimumSamplingInterval, variant);
-
-            server.getNodeMap().addNode(conveyorModeNode);
-            conveyorFolder.addOrganizes(conveyorModeNode);
-
-
-        }
-
-        // Mode
-        {
-            String name = "Status";
-            NodeId typeId = Identifiers.Boolean;
-            //NodeId typeId = Identifiers.StateVariableType;
-            AttributeDelegate statusAttributeDelegate = getStatusAttributeDelegate();
-            double minimumSamplingInterval = 1.0;
-            Variant variant = new Variant(false);
-
-            UaVariableNode conveyorStatusNode = createConveyorVariableNode(name, typeId, statusAttributeDelegate, minimumSamplingInterval, variant);
-
-            server.getNodeMap().addNode(conveyorStatusNode);
-            conveyorFolder.addOrganizes(conveyorStatusNode);
-
-
-        }
-
-
-    }
-
-    private UaVariableNode createConveyorVariableNode(String name, NodeId typeId, AttributeDelegate modeAttributeDelegate, double minimumSamplingInterval, Variant variant) {
-        UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "Sorter/Conveyor/" + name))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, name))
-                .setDisplayName(LocalizedText.english(name))
-                .setDataType(typeId)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
-
-        node.setMinimumSamplingInterval(minimumSamplingInterval);
-
-        node.setValue(new DataValue(variant));
-
-
-        node.setAttributeDelegate(AttributeDelegateChain.create(
-                modeAttributeDelegate,
-                ValueLoggingDelegate::new
-        ));
-        return node;
-    }
-
-
-    private AttributeDelegate getModeAttributeDelegate() {
-        return new AttributeDelegate() {
-            @Override
-            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                return new DataValue(new Variant(ConveyorFactory.createConveyor().getMode()));
-            }
-        };
-    }
-
-    private AttributeDelegate getStatusAttributeDelegate() {
-        return new AttributeDelegate() {
-            @Override
-            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                return new DataValue(new Variant(ConveyorFactory.createConveyor().getStatus()));
-            }
-        };
-    }
-
-
-    private void addDataAccessNodes(UaFolderNode rootNode) {
-        // DataAccess folder
-        UaFolderNode dataAccessFolder = new UaFolderNode(
-                server.getNodeMap(),
-                new NodeId(namespaceIndex, "Sorter/DataAccess"),
-                new QualifiedName(namespaceIndex, "DataAccess"),
-                LocalizedText.english("DataAccess")
-        );
-
-        server.getNodeMap().addNode(dataAccessFolder);
-        rootNode.addOrganizes(dataAccessFolder);
-
-        // AnalogItemType node
-        AnalogItemNode node = nodeFactory.createVariable(
-                new NodeId(namespaceIndex, "Sorter/DataAccess/AnalogValue"),
-                new QualifiedName(namespaceIndex, "AnalogValue"),
-                LocalizedText.english("AnalogValue"),
-                Identifiers.AnalogItemType,
-                AnalogItemNode.class
-        );
-
-        node.setDataType(Identifiers.Double);
-        node.setValue(new DataValue(new Variant(3.14d)));
-
-        node.setEURange(new Range(0.0, 100.0));
-
-        server.getNodeMap().addNode(node);
-        dataAccessFolder.addOrganizes(node);
     }
 
     private void addMethodNode(UaObjectNode objectNode) {
@@ -449,6 +309,75 @@ public class SorterNamespace implements Namespace {
             logger.error("Error creating sqrt() method.", e);
         }
     }
+
+    private AttributeDelegate getModeAttributeDelegate() {
+        return new AttributeDelegate() {
+            @Override
+            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
+                return new DataValue(new Variant(ConveyorFactory.createConveyor().getMode()));
+            }
+        };
+    }
+
+    private AttributeDelegate getStatusAttributeDelegate() {
+        return new AttributeDelegate() {
+            @Override
+            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
+                return new DataValue(new Variant(ConveyorFactory.createConveyor().getStatus()));
+            }
+        };
+    }
+
+    @Override
+    public UShort getNamespaceIndex() {
+        return namespaceIndex;
+    }
+
+    @Override
+    public String getNamespaceUri() {
+        return NAMESPACE_URI;
+    }
+
+
+
+
+
+
+
+
+
+
+    private void addDataAccessNodes(UaFolderNode rootNode) {
+        // DataAccess folder
+        UaFolderNode dataAccessFolder = new UaFolderNode(
+                server.getNodeMap(),
+                new NodeId(namespaceIndex, "Sorter/DataAccess"),
+                new QualifiedName(namespaceIndex, "DataAccess"),
+                LocalizedText.english("DataAccess")
+        );
+
+        server.getNodeMap().addNode(dataAccessFolder);
+        rootNode.addOrganizes(dataAccessFolder);
+
+        // AnalogItemType node
+        AnalogItemNode node = nodeFactory.createVariable(
+                new NodeId(namespaceIndex, "Sorter/DataAccess/AnalogValue"),
+                new QualifiedName(namespaceIndex, "AnalogValue"),
+                LocalizedText.english("AnalogValue"),
+                Identifiers.AnalogItemType,
+                AnalogItemNode.class
+        );
+
+        node.setDataType(Identifiers.Double);
+        node.setValue(new DataValue(new Variant(3.14d)));
+
+        node.setEURange(new Range(0.0, 100.0));
+
+        server.getNodeMap().addNode(node);
+        dataAccessFolder.addOrganizes(node);
+    }
+
+
 
 
     private void addCustomDataTypeVariable(UaFolderNode rootFolder) {
