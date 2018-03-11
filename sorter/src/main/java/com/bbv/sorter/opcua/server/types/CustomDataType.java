@@ -11,7 +11,7 @@
  *   http://www.eclipse.org/org/documents/edl-v10.html.
  */
 
-package com.bbv.opcua.sorter.server.types;
+package com.bbv.sorter.opcua.server.types;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;

@@ -11,8 +11,10 @@
  *   http://www.eclipse.org/org/documents/edl-v10.html.
  */
 
-package com.bbv.opcua.sorter.server;
+package com.bbv.sorter.opcua.server;
 
+import com.bbv.sorter.opcua.server.methods.ChangeConveyorModeMethod;
+import com.bbv.sorter.opcua.server.types.CustomDataType;
 import com.google.common.collect.Lists;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.sdk.core.Reference;
@@ -43,8 +45,6 @@ import org.eclipse.milo.opcua.stack.core.types.structured.WriteValue;
 import org.eclipse.milo.opcua.stack.core.util.FutureUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.bbv.opcua.sorter.server.methods.SqrtMethod;
-import com.bbv.opcua.sorter.server.types.CustomDataType;
 
 import java.lang.reflect.Array;
 import java.util.List;
@@ -55,9 +55,9 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.*;
 
-public class SorterNamespace implements Namespace {
+public class SorterNamespaceHelloWorld implements Namespace {
 
-    public static final String NAMESPACE_URI = "urn:eclipse:milo:hello-world";
+    public static final String NAMESPACE_URI = "urn:eclipse:milo:hello-wonka";
 
     private static final Object[][] STATIC_SCALAR_NODES = new Object[][]{
         {"Boolean", Identifiers.Boolean, new Variant(false)},
@@ -118,7 +118,7 @@ public class SorterNamespace implements Namespace {
     private final OpcUaServer server;
     private final UShort namespaceIndex;
 
-    public SorterNamespace(OpcUaServer server, UShort namespaceIndex) {
+    public SorterNamespaceHelloWorld(OpcUaServer server, UShort namespaceIndex) {
         this.server = server;
         this.namespaceIndex = namespaceIndex;
 
@@ -131,14 +131,14 @@ public class SorterNamespace implements Namespace {
         );
 
         try {
-            // Create a "HelloWorld" folder and add it to the node manager
-            NodeId folderNodeId = new NodeId(namespaceIndex, "HelloWorld");
+            // Create a "HelloWonka" folder and add it to the node manager
+            NodeId folderNodeId = new NodeId(namespaceIndex, "HelloWonka");
 
             UaFolderNode folderNode = new UaFolderNode(
                 server.getNodeMap(),
                 folderNodeId,
-                new QualifiedName(namespaceIndex, "HelloWorld"),
-                LocalizedText.english("HelloWorld")
+                new QualifiedName(namespaceIndex, "HelloWonka"),
+                LocalizedText.english("HelloWonka")
             );
 
             server.getNodeMap().addNode(folderNode);
@@ -187,7 +187,7 @@ public class SorterNamespace implements Namespace {
     private void addArrayNodes(UaFolderNode rootNode) {
         UaFolderNode arrayTypesFolder = new UaFolderNode(
             server.getNodeMap(),
-            new NodeId(namespaceIndex, "HelloWorld/ArrayTypes"),
+            new NodeId(namespaceIndex, "HelloWonka/ArrayTypes"),
             new QualifiedName(namespaceIndex, "ArrayTypes"),
             LocalizedText.english("ArrayTypes")
         );
@@ -206,7 +206,7 @@ public class SorterNamespace implements Namespace {
             Variant variant = new Variant(array);
 
             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "HelloWorld/ArrayTypes/" + name))
+                .setNodeId(new NodeId(namespaceIndex, "HelloWonka/ArrayTypes/" + name))
                 .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
                 .setUserAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
                 .setBrowseName(new QualifiedName(namespaceIndex, name))
@@ -229,7 +229,7 @@ public class SorterNamespace implements Namespace {
     private void addScalarNodes(UaFolderNode rootNode) {
         UaFolderNode scalarTypesFolder = new UaFolderNode(
             server.getNodeMap(),
-            new NodeId(namespaceIndex, "HelloWorld/ScalarTypes"),
+            new NodeId(namespaceIndex, "HelloWonka/ScalarTypes"),
             new QualifiedName(namespaceIndex, "ScalarTypes"),
             LocalizedText.english("ScalarTypes")
         );
@@ -243,7 +243,7 @@ public class SorterNamespace implements Namespace {
             Variant variant = (Variant) os[2];
 
             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "HelloWorld/ScalarTypes/" + name))
+                .setNodeId(new NodeId(namespaceIndex, "HelloWonka/ScalarTypes/" + name))
                 .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
                 .setUserAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
                 .setBrowseName(new QualifiedName(namespaceIndex, name))
@@ -264,7 +264,7 @@ public class SorterNamespace implements Namespace {
     private void addAdminReadableNodes(UaFolderNode rootNode) {
         UaFolderNode adminFolder = new UaFolderNode(
             server.getNodeMap(),
-            new NodeId(namespaceIndex, "HelloWorld/OnlyAdminCanRead"),
+            new NodeId(namespaceIndex, "HelloWonka/OnlyAdminCanRead"),
             new QualifiedName(namespaceIndex, "OnlyAdminCanRead"),
             LocalizedText.english("OnlyAdminCanRead")
         );
@@ -274,7 +274,7 @@ public class SorterNamespace implements Namespace {
 
         String name = "String";
         UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-            .setNodeId(new NodeId(namespaceIndex, "HelloWorld/OnlyAdminCanRead/" + name))
+            .setNodeId(new NodeId(namespaceIndex, "HelloWonka/OnlyAdminCanRead/" + name))
             .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
             .setBrowseName(new QualifiedName(namespaceIndex, name))
             .setDisplayName(LocalizedText.english(name))
@@ -299,7 +299,7 @@ public class SorterNamespace implements Namespace {
     private void addAdminWritableNodes(UaFolderNode rootNode) {
         UaFolderNode adminFolder = new UaFolderNode(
             server.getNodeMap(),
-            new NodeId(namespaceIndex, "HelloWorld/OnlyAdminCanWrite"),
+            new NodeId(namespaceIndex, "HelloWonka/OnlyAdminCanWrite"),
             new QualifiedName(namespaceIndex, "OnlyAdminCanWrite"),
             LocalizedText.english("OnlyAdminCanWrite")
         );
@@ -309,7 +309,7 @@ public class SorterNamespace implements Namespace {
 
         String name = "String";
         UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-            .setNodeId(new NodeId(namespaceIndex, "HelloWorld/OnlyAdminCanWrite/" + name))
+            .setNodeId(new NodeId(namespaceIndex, "HelloWonka/OnlyAdminCanWrite/" + name))
             .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
             .setBrowseName(new QualifiedName(namespaceIndex, name))
             .setDisplayName(LocalizedText.english(name))
@@ -334,7 +334,7 @@ public class SorterNamespace implements Namespace {
     private void addDynamicNodes(UaFolderNode rootNode) {
         UaFolderNode dynamicFolder = new UaFolderNode(
             server.getNodeMap(),
-            new NodeId(namespaceIndex, "HelloWorld/Dynamic"),
+            new NodeId(namespaceIndex, "HelloWonka/Dynamic"),
             new QualifiedName(namespaceIndex, "Dynamic"),
             LocalizedText.english("Dynamic")
         );
@@ -349,7 +349,7 @@ public class SorterNamespace implements Namespace {
             Variant variant = new Variant(false);
 
             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "HelloWorld/Dynamic/" + name))
+                .setNodeId(new NodeId(namespaceIndex, "HelloWonka/Dynamic/" + name))
                 .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
                 .setBrowseName(new QualifiedName(namespaceIndex, name))
                 .setDisplayName(LocalizedText.english(name))
@@ -382,7 +382,7 @@ public class SorterNamespace implements Namespace {
             Variant variant = new Variant(0);
 
             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "HelloWorld/Dynamic/" + name))
+                .setNodeId(new NodeId(namespaceIndex, "HelloWonka/Dynamic/" + name))
                 .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
                 .setBrowseName(new QualifiedName(namespaceIndex, name))
                 .setDisplayName(LocalizedText.english(name))
@@ -415,7 +415,7 @@ public class SorterNamespace implements Namespace {
             Variant variant = new Variant(0.0);
 
             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "HelloWorld/Dynamic/" + name))
+                .setNodeId(new NodeId(namespaceIndex, "HelloWonka/Dynamic/" + name))
                 .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
                 .setBrowseName(new QualifiedName(namespaceIndex, name))
                 .setDisplayName(LocalizedText.english(name))
@@ -446,7 +446,7 @@ public class SorterNamespace implements Namespace {
         // DataAccess folder
         UaFolderNode dataAccessFolder = new UaFolderNode(
             server.getNodeMap(),
-            new NodeId(namespaceIndex, "HelloWorld/DataAccess"),
+            new NodeId(namespaceIndex, "HelloWonka/DataAccess"),
             new QualifiedName(namespaceIndex, "DataAccess"),
             LocalizedText.english("DataAccess")
         );
@@ -456,7 +456,7 @@ public class SorterNamespace implements Namespace {
 
         // AnalogItemType node
         AnalogItemNode node = nodeFactory.createVariable(
-            new NodeId(namespaceIndex, "HelloWorld/DataAccess/AnalogValue"),
+            new NodeId(namespaceIndex, "HelloWonka/DataAccess/AnalogValue"),
             new QualifiedName(namespaceIndex, "AnalogValue"),
             LocalizedText.english("AnalogValue"),
             Identifiers.AnalogItemType,
@@ -474,7 +474,7 @@ public class SorterNamespace implements Namespace {
 
     private void addMethodNode(UaFolderNode folderNode) {
         UaMethodNode methodNode = UaMethodNode.builder(server.getNodeMap())
-            .setNodeId(new NodeId(namespaceIndex, "HelloWorld/sqrt(x)"))
+            .setNodeId(new NodeId(namespaceIndex, "HelloWonka/sqrt(x)"))
             .setBrowseName(new QualifiedName(namespaceIndex, "sqrt(x)"))
             .setDisplayName(new LocalizedText(null, "sqrt(x)"))
             .setDescription(
@@ -485,7 +485,7 @@ public class SorterNamespace implements Namespace {
         try {
             AnnotationBasedInvocationHandler invocationHandler =
                 AnnotationBasedInvocationHandler.fromAnnotatedObject(
-                    server.getNodeMap(), new SqrtMethod());
+                    server.getNodeMap(), new ChangeConveyorModeMethod());
 
             methodNode.setProperty(UaMethodNode.InputArguments, invocationHandler.getInputArguments());
             methodNode.setProperty(UaMethodNode.OutputArguments, invocationHandler.getOutputArguments());
@@ -580,7 +580,7 @@ public class SorterNamespace implements Namespace {
         // NodeFactory takes care of recursively instantiating MyObject member nodes
         // as well as adding all nodes to the address space.
         UaObjectNode myObject = nodeFactory.createObject(
-            new NodeId(namespaceIndex, "HelloWorld/MyObject"),
+            new NodeId(namespaceIndex, "HelloWonka/MyObject"),
             new QualifiedName(namespaceIndex, "MyObject"),
             LocalizedText.english("MyObject"),
             objectTypeNode.getNodeId()
@@ -655,7 +655,7 @@ public class SorterNamespace implements Namespace {
 
 
         UaVariableNode customDataTypeVariable = UaVariableNode.builder(server.getNodeMap())
-            .setNodeId(new NodeId(namespaceIndex, "HelloWorld/CustomDataTypeVariable"))
+            .setNodeId(new NodeId(namespaceIndex, "HelloWonka/CustomDataTypeVariable"))
             .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
             .setUserAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
             .setBrowseName(new QualifiedName(namespaceIndex, "CustomDataTypeVariable"))

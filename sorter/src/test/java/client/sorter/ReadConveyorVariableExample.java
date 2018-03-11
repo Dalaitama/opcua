@@ -11,8 +11,10 @@
  *   http://www.eclipse.org/org/documents/edl-v10.html.
  */
 
-package client;
+package client.sorter;
 
+import client.ClientExample;
+import client.ClientExampleRunner;
 import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
 import org.eclipse.milo.opcua.sdk.client.api.nodes.VariableNode;
@@ -25,10 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 
-public class ReadNodeExample implements ClientExample {
+public class ReadConveyorVariableExample implements ClientExample {
 
     public static void main(String[] args) throws Exception {
-        ReadNodeExample example = new ReadNodeExample();
+        ReadConveyorVariableExample example = new ReadConveyorVariableExample();
 
         new ClientExampleRunner(example, true).run();
     }
@@ -41,10 +43,12 @@ public class ReadNodeExample implements ClientExample {
         client.connect().get();
 
         UShort index = client.getNamespaceTable().getIndex("urn:bbv:fischer:color-sorter");
-        NodeId nodeId = new NodeId(index, "Sorter/Conveyor/Mode");
+        NodeId nodeId = new NodeId(index, "Sorter/Conveyor.Mode");
         printConveyorMode(client, index, nodeId);
 
         ConveyorFactory.createConveyor().start();
+
+        Thread.sleep(1000);
 
         printConveyorMode(client, index, nodeId);
 

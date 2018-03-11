@@ -9,7 +9,7 @@
         <module name="sorter" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="1.8">
       <module name="opcua" target="1.8" />
       <module name="sorter" target="1.8" />
     </bytecodeTargetLevel>
