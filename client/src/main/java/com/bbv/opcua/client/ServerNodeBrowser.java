@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -32,31 +33,33 @@ public class ServerNodeBrowser {
 
             UShort index = client.getNamespaceTable().getIndex("urn:bbv:fischer:color-sorter");
             NodeId nodeId = new NodeId(index, "Sorter");
-            model.addAttribute("name", browseNode("", client, nodeId));
+            ArrayList<String> nodes = new ArrayList<>();
+            browseNode(nodes, "", client, nodeId);
+            Model addAttribute = model.addAttribute("nodes", nodes);
         } catch (Exception e) {
 
             e.printStackTrace();
         }
 
-        return "greeting";
+        return "browse";
     }
 
-    private String browseNode(String indent, OpcUaClient client, NodeId browseRoot) {
-        StringBuilder sb = new StringBuilder();
+    private void browseNode(List<String> stringList, String indent, OpcUaClient client, NodeId browseRoot) {
+
         try {
             List<Node> nodes = client.getAddressSpace().browse(browseRoot).get();
 
             for (Node node : nodes) {
-                sb.append(String.format("%s Node=%s Type=%s", indent, node.getBrowseName().get().getName(), node.getNodeClass().get().name()));
-                sb.append(System.getProperty("line.separator"));
+                stringList.add(String.format("%s Node=%s Type=%s" + System.getProperty("line.separator"), indent, node.getBrowseName().get().getName(), node.getNodeClass().get().name()));
+
                 // recursively browse to children
-                browseNode(indent + "  ", client, node.getNodeId().get());
-                System.out.println("ciao");
+                browseNode(stringList, indent + "-", client, node.getNodeId().get());
+
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
-        return sb.toString();
+
     }
 
 
