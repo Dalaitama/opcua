@@ -37,7 +37,7 @@ public class BrowseExample implements ClientExample {
     public static void main(String[] args) throws Exception {
         BrowseExample example = new BrowseExample();
 
-        new ClientExampleRunner(example).run();
+        new ClientExampleRunner(example,false).run();
     }
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

@@ -32,7 +32,7 @@ public class ReadConveyorVariableExample implements ClientExample {
     public static void main(String[] args) throws Exception {
         ReadConveyorVariableExample example = new ReadConveyorVariableExample();
 
-        new ClientExampleRunner(example, true).run();
+        new ClientExampleRunner(example, false).run();
     }
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

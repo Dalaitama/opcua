@@ -61,53 +61,6 @@ public class SorterNamespace implements Namespace {
 
     public static final String NAMESPACE_URI = "urn:bbv:fischer:color-sorter";
 
-    private static final Object[][] STATIC_SCALAR_NODES = new Object[][]{
-            {"Boolean", Identifiers.Boolean, new Variant(false)},
-            {"Byte", Identifiers.Byte, new Variant(ubyte(0x00))},
-            {"SByte", Identifiers.SByte, new Variant((byte) 0x00)},
-            {"Int16", Identifiers.Int16, new Variant((short) 16)},
-            {"Int32", Identifiers.Int32, new Variant(32)},
-            {"Int64", Identifiers.Int64, new Variant(64L)},
-            {"UInt16", Identifiers.UInt16, new Variant(ushort(16))},
-            {"UInt32", Identifiers.UInt32, new Variant(uint(32))},
-            {"UInt64", Identifiers.UInt64, new Variant(ulong(64L))},
-            {"Float", Identifiers.Float, new Variant(3.14f)},
-            {"Double", Identifiers.Double, new Variant(3.14d)},
-            {"String", Identifiers.String, new Variant("string value")},
-            {"DateTime", Identifiers.DateTime, new Variant(DateTime.now())},
-            {"Guid", Identifiers.Guid, new Variant(UUID.randomUUID())},
-            {"ByteString", Identifiers.ByteString, new Variant(new ByteString(new byte[]{0x01, 0x02, 0x03, 0x04}))},
-            {"XmlElement", Identifiers.XmlElement, new Variant(new XmlElement("<a>hello</a>"))},
-            {"LocalizedText", Identifiers.LocalizedText, new Variant(LocalizedText.english("localized text"))},
-            {"QualifiedName", Identifiers.QualifiedName, new Variant(new QualifiedName(1234, "defg"))},
-            {"NodeId", Identifiers.NodeId, new Variant(new NodeId(1234, "abcd"))},
-
-            {"Duration", Identifiers.Duration, new Variant(1.0)},
-            {"UtcTime", Identifiers.UtcTime, new Variant(DateTime.now())},
-    };
-
-    private static final Object[][] STATIC_ARRAY_NODES = new Object[][]{
-            {"BooleanArray", Identifiers.Boolean, false},
-            {"ByteArray", Identifiers.Byte, ubyte(0)},
-            {"SByteArray", Identifiers.SByte, (byte) 0x00},
-            {"Int16Array", Identifiers.Int16, (short) 16},
-            {"Int32Array", Identifiers.Int32, 32},
-            {"Int64Array", Identifiers.Int64, 64L},
-            {"UInt16Array", Identifiers.UInt16, ushort(16)},
-            {"UInt32Array", Identifiers.UInt32, uint(32)},
-            {"UInt64Array", Identifiers.UInt64, ulong(64L)},
-            {"FloatArray", Identifiers.Float, 3.14f},
-            {"DoubleArray", Identifiers.Double, 3.14d},
-            {"StringArray", Identifiers.String, "string value"},
-            {"DateTimeArray", Identifiers.DateTime, new Variant(DateTime.now())},
-            {"GuidArray", Identifiers.Guid, new Variant(UUID.randomUUID())},
-            {"ByteStringArray", Identifiers.ByteString, new Variant(new ByteString(new byte[]{0x01, 0x02, 0x03, 0x04}))},
-            {"XmlElementArray", Identifiers.XmlElement, new Variant(new XmlElement("<a>hello</a>"))},
-            {"LocalizedTextArray", Identifiers.LocalizedText, new Variant(LocalizedText.english("localized text"))},
-            {"QualifiedNameArray", Identifiers.QualifiedName, new Variant(new QualifiedName(1234, "defg"))},
-            {"NodeIdArray", Identifiers.NodeId, new Variant(new NodeId(1234, "abcd"))}
-    };
-
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -135,8 +88,6 @@ public class SorterNamespace implements Namespace {
             UaFolderNode sorterFolder = createSorterFolder(server, namespaceIndex);
             UaObjectNode instance = addConveyorObjectTypeAndInstance(sorterFolder);
             addMethodNode(instance);
-            //addConveyorNodes(sorterFolder);
-            //addCustomDataTypeVariable(sorterFolder);
         } catch (UaException e) {
             logger.error("Error adding nodes: {}", e.getMessage(), e);
         }
@@ -148,6 +99,7 @@ public class SorterNamespace implements Namespace {
                 .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/ConveyorType"))
                 .setBrowseName(new QualifiedName(namespaceIndex, "ConveyorType"))
                 .setDisplayName(LocalizedText.english("ConveyorType"))
+                .setDescription(LocalizedText.english("Depict a Conveyor of Fisher Model xxyy"))
                 .setIsAbstract(false)
                 .build();
 
@@ -157,12 +109,14 @@ public class SorterNamespace implements Namespace {
                 .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
                 .setBrowseName(new QualifiedName(namespaceIndex, "Mode"))
                 .setDisplayName(LocalizedText.english("Mode"))
+                .setDescription(LocalizedText.english("The Mode , Started/Stopped"))
                 .setDataType(Identifiers.Boolean)
                 .setTypeDefinition(Identifiers.BaseDataVariableType)
                 .build();
 
         conveyorTypeVariableNodeMode.setValue(new DataValue(new Variant(false)));
         conveyorTypeVariableNodeMode.setMinimumSamplingInterval(1.0);
+
         conveyorTypeNode.addComponent(conveyorTypeVariableNodeMode);
 
 
@@ -171,6 +125,7 @@ public class SorterNamespace implements Namespace {
                 .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
                 .setBrowseName(new QualifiedName(namespaceIndex, "Status"))
                 .setDisplayName(LocalizedText.english("Status"))
+                .setDescription(LocalizedText.english("The Status , On/Off"))
                 .setDataType(Identifiers.Boolean)
                 .setTypeDefinition(Identifiers.BaseDataVariableType)
                 .build();
@@ -208,7 +163,7 @@ public class SorterNamespace implements Namespace {
         // Add it into the address space.
         server.getNodeMap().addNode(conveyorTypeNode);
 
-        // Use NodeFactory to create instance of MyObjectType called "MyObject".
+        // Use NodeFactory to create instance of ConveyorType called "Conveyor".
         // NodeFactory takes care of recursively instantiating MyObject member nodes
         // as well as adding all nodes to the address space.
         UaObjectNode conveyor = nodeFactory.createObject(
@@ -217,6 +172,7 @@ public class SorterNamespace implements Namespace {
                 LocalizedText.english("Conveyor"),
                 conveyorTypeNode.getNodeId()
         );
+
 
         conveyor.getComponentNodes().stream()
                 .filter(isEqualVariableNode(conveyorTypeVariableNodeMode))
@@ -239,10 +195,6 @@ public class SorterNamespace implements Namespace {
 
         return conveyor;
     }
-
-
-
-
 
 
     private UaFolderNode createSorterFolder(OpcUaServer server, UShort namespaceIndex) throws UaException {
@@ -338,281 +290,6 @@ public class SorterNamespace implements Namespace {
         return NAMESPACE_URI;
     }
 
-
-
-
-
-
-
-
-
-
-    private void addDataAccessNodes(UaFolderNode rootNode) {
-        // DataAccess folder
-        UaFolderNode dataAccessFolder = new UaFolderNode(
-                server.getNodeMap(),
-                new NodeId(namespaceIndex, "Sorter/DataAccess"),
-                new QualifiedName(namespaceIndex, "DataAccess"),
-                LocalizedText.english("DataAccess")
-        );
-
-        server.getNodeMap().addNode(dataAccessFolder);
-        rootNode.addOrganizes(dataAccessFolder);
-
-        // AnalogItemType node
-        AnalogItemNode node = nodeFactory.createVariable(
-                new NodeId(namespaceIndex, "Sorter/DataAccess/AnalogValue"),
-                new QualifiedName(namespaceIndex, "AnalogValue"),
-                LocalizedText.english("AnalogValue"),
-                Identifiers.AnalogItemType,
-                AnalogItemNode.class
-        );
-
-        node.setDataType(Identifiers.Double);
-        node.setValue(new DataValue(new Variant(3.14d)));
-
-        node.setEURange(new Range(0.0, 100.0));
-
-        server.getNodeMap().addNode(node);
-        dataAccessFolder.addOrganizes(node);
-    }
-
-
-
-
-    private void addCustomDataTypeVariable(UaFolderNode rootFolder) {
-        // add a custom DataTypeNode as a subtype of the built-in Structure DataTypeNode
-        NodeId dataTypeId = new NodeId(namespaceIndex, "DataType.CustomDataType");
-
-        UaDataTypeNode dataTypeNode = new UaDataTypeNode(
-                server.getNodeMap(),
-                dataTypeId,
-                new QualifiedName(namespaceIndex, "CustomDataType"),
-                LocalizedText.english("CustomDataType"),
-                LocalizedText.english("CustomDataType"),
-                uint(0),
-                uint(0),
-                false
-        );
-
-        // Inverse ref to Structure
-        dataTypeNode.addReference(new Reference(
-                dataTypeId,
-                Identifiers.HasSubtype,
-                Identifiers.Structure.expanded(),
-                NodeClass.DataType,
-                false
-        ));
-
-        // Forward ref from Structure
-        Optional<UaDataTypeNode> structureDataTypeNode = server.getNodeMap()
-                .getNode(Identifiers.Structure)
-                .map(UaDataTypeNode.class::cast);
-
-        structureDataTypeNode.ifPresent(node ->
-                node.addReference(new Reference(
-                        node.getNodeId(),
-                        Identifiers.HasSubtype,
-                        dataTypeId.expanded(),
-                        NodeClass.DataType,
-                        true
-                ))
-        );
-
-        // Create a dictionary, binaryEncodingId, and register the codec under that id
-        OpcUaBinaryDataTypeDictionary dictionary = new OpcUaBinaryDataTypeDictionary(
-                "urn:eclipse:milo:example:custom-data-type"
-        );
-
-        NodeId binaryEncodingId = new NodeId(namespaceIndex, "DataType.CustomDataType.BinaryEncoding");
-
-        dictionary.registerStructCodec(
-                new CustomDataType.Codec().asBinaryCodec(),
-                "CustomDataType",
-                binaryEncodingId
-        );
-
-        // Register dictionary with the shared DataTypeManager instance
-        OpcUaDataTypeManager.getInstance().registerTypeDictionary(dictionary);
-
-
-        UaVariableNode customDataTypeVariable = UaVariableNode.builder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "Sorter/CustomDataTypeVariable"))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setUserAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, "CustomDataTypeVariable"))
-                .setDisplayName(LocalizedText.english("CustomDataTypeVariable"))
-                .setDataType(dataTypeId)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
-
-        CustomDataType value = new CustomDataType(
-                "foo",
-                uint(42),
-                true
-        );
-
-        ExtensionObject xo = ExtensionObject.encode(value, binaryEncodingId);
-
-        customDataTypeVariable.setValue(new DataValue(new Variant(xo)));
-
-        rootFolder.addOrganizes(customDataTypeVariable);
-
-        customDataTypeVariable.addReference(new Reference(
-                customDataTypeVariable.getNodeId(),
-                Identifiers.Organizes,
-                rootFolder.getNodeId().expanded(),
-                rootFolder.getNodeClass(),
-                false
-        ));
-    }
-
-    private void addArrayNodes(UaFolderNode rootNode) {
-        UaFolderNode arrayTypesFolder = new UaFolderNode(
-                server.getNodeMap(),
-                new NodeId(namespaceIndex, "Sorter/ArrayTypes"),
-                new QualifiedName(namespaceIndex, "ArrayTypes"),
-                LocalizedText.english("ArrayTypes")
-        );
-
-        server.getNodeMap().addNode(arrayTypesFolder);
-        rootNode.addOrganizes(arrayTypesFolder);
-
-        for (Object[] os : STATIC_ARRAY_NODES) {
-            String name = (String) os[0];
-            NodeId typeId = (NodeId) os[1];
-            Object value = os[2];
-            Object array = Array.newInstance(value.getClass(), 4);
-            for (int i = 0; i < 4; i++) {
-                Array.set(array, i, value);
-            }
-            Variant variant = new Variant(array);
-
-            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                    .setNodeId(new NodeId(namespaceIndex, "Sorter/ArrayTypes/" + name))
-                    .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                    .setUserAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                    .setBrowseName(new QualifiedName(namespaceIndex, name))
-                    .setDisplayName(LocalizedText.english(name))
-                    .setDataType(typeId)
-                    .setTypeDefinition(Identifiers.BaseDataVariableType)
-                    .setValueRank(ValueRank.OneDimension.getValue())
-                    .setArrayDimensions(new UInteger[]{uint(0)})
-                    .build();
-
-            node.setValue(new DataValue(variant));
-
-            node.setAttributeDelegate(new ValueLoggingDelegate());
-
-            server.getNodeMap().addNode(node);
-            arrayTypesFolder.addOrganizes(node);
-        }
-    }
-
-    private void addScalarNodes(UaFolderNode rootNode) {
-        UaFolderNode scalarTypesFolder = new UaFolderNode(
-                server.getNodeMap(),
-                new NodeId(namespaceIndex, "Sorter/ScalarTypes"),
-                new QualifiedName(namespaceIndex, "ScalarTypes"),
-                LocalizedText.english("ScalarTypes")
-        );
-
-        server.getNodeMap().addNode(scalarTypesFolder);
-        rootNode.addOrganizes(scalarTypesFolder);
-
-        for (Object[] os : STATIC_SCALAR_NODES) {
-            String name = (String) os[0];
-            NodeId typeId = (NodeId) os[1];
-            Variant variant = (Variant) os[2];
-
-            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                    .setNodeId(new NodeId(namespaceIndex, "Sorter/ScalarTypes/" + name))
-                    .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                    .setUserAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                    .setBrowseName(new QualifiedName(namespaceIndex, name))
-                    .setDisplayName(LocalizedText.english(name))
-                    .setDataType(typeId)
-                    .setTypeDefinition(Identifiers.BaseDataVariableType)
-                    .build();
-
-            node.setValue(new DataValue(variant));
-
-            node.setAttributeDelegate(new ValueLoggingDelegate());
-
-            server.getNodeMap().addNode(node);
-            scalarTypesFolder.addOrganizes(node);
-        }
-    }
-
-    private void addAdminReadableNodes(UaFolderNode rootNode) {
-        UaFolderNode adminFolder = new UaFolderNode(
-                server.getNodeMap(),
-                new NodeId(namespaceIndex, "Sorter/OnlyAdminCanRead"),
-                new QualifiedName(namespaceIndex, "OnlyAdminCanRead"),
-                LocalizedText.english("OnlyAdminCanRead")
-        );
-
-        server.getNodeMap().addNode(adminFolder);
-        rootNode.addOrganizes(adminFolder);
-
-        String name = "String";
-        UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "Sorter/OnlyAdminCanRead/" + name))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, name))
-                .setDisplayName(LocalizedText.english(name))
-                .setDataType(Identifiers.String)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
-
-        node.setValue(new DataValue(new Variant("shh... don't tell the lusers")));
-
-        node.setAttributeDelegate(new RestrictedAccessDelegate(identity -> {
-            if ("admin".equals(identity)) {
-                return AccessLevel.READ_WRITE;
-            } else {
-                return AccessLevel.NONE;
-            }
-        }));
-
-        server.getNodeMap().addNode(node);
-        adminFolder.addOrganizes(node);
-    }
-
-    private void addAdminWritableNodes(UaFolderNode rootNode) {
-        UaFolderNode adminFolder = new UaFolderNode(
-                server.getNodeMap(),
-                new NodeId(namespaceIndex, "Sorter/OnlyAdminCanWrite"),
-                new QualifiedName(namespaceIndex, "OnlyAdminCanWrite"),
-                LocalizedText.english("OnlyAdminCanWrite")
-        );
-
-        server.getNodeMap().addNode(adminFolder);
-        rootNode.addOrganizes(adminFolder);
-
-        String name = "String";
-        UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "Sorter/OnlyAdminCanWrite/" + name))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, name))
-                .setDisplayName(LocalizedText.english(name))
-                .setDataType(Identifiers.String)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
-
-        node.setValue(new DataValue(new Variant("admin was here")));
-
-        node.setAttributeDelegate(new RestrictedAccessDelegate(identity -> {
-            if ("admin".equals(identity)) {
-                return AccessLevel.READ_WRITE;
-            } else {
-                return AccessLevel.READ_ONLY;
-            }
-        }));
-
-        server.getNodeMap().addNode(node);
-        adminFolder.addOrganizes(node);
-    }
 
     @Override
     public CompletableFuture<List<Reference>> browse(AccessContext context, NodeId nodeId) {

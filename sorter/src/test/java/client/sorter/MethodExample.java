@@ -37,7 +37,7 @@ public class MethodExample implements ClientExample {
 
 
 
-        new ClientExampleRunner(example).run();
+        new ClientExampleRunner(example,false).run();
     }
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -48,13 +48,26 @@ public class MethodExample implements ClientExample {
         client.connect().get();
 
         // call the start(x) function
-        start(client, true).exceptionally(ex -> {
+        boolean input = true;
+        changeMode(client, future, true);
+        Thread.sleep(1000);
+        changeMode(client, future, false); Thread.sleep(1000);
+        changeMode(client, future, true); Thread.sleep(1000);
+        changeMode(client, future, false); Thread.sleep(1000);
+        changeMode(client, future, true); Thread.sleep(1000);
+        changeMode(client, future, false); Thread.sleep(1000);
+
+        future.complete(client);
+    }
+
+    private void changeMode(OpcUaClient client, CompletableFuture<OpcUaClient> future, boolean input) {
+        start(client, input).exceptionally(ex -> {
             logger.error("error invoking start()", ex);
             return false;
         }).thenAccept(v -> {
             logger.info("start={}", v);
 
-            future.complete(client);
+
         });
     }
 
