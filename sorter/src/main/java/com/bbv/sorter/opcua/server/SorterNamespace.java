@@ -23,6 +23,7 @@ import org.eclipse.milo.opcua.sdk.core.ValueRank;
 import org.eclipse.milo.opcua.sdk.core.annotations.UaVariableType;
 import org.eclipse.milo.opcua.sdk.server.OpcUaServer;
 import org.eclipse.milo.opcua.sdk.server.api.*;
+import org.eclipse.milo.opcua.sdk.server.api.nodes.Node;
 import org.eclipse.milo.opcua.sdk.server.api.nodes.VariableNode;
 import org.eclipse.milo.opcua.sdk.server.model.nodes.variables.AnalogItemNode;
 import org.eclipse.milo.opcua.sdk.server.model.nodes.variables.MultiStateDiscreteNode;
@@ -71,9 +72,7 @@ public class SorterNamespace implements Namespace {
 
 
     private final SubscriptionModel subscriptionModel;
-
     private final NodeFactory nodeFactory;
-
     private final OpcUaServer server;
     private final UShort namespaceIndex;
 
@@ -82,7 +81,6 @@ public class SorterNamespace implements Namespace {
         this.namespaceIndex = namespaceIndex;
 
         subscriptionModel = new SubscriptionModel(server, this);
-
         nodeFactory = new NodeFactory(
                 server.getNodeMap(),
                 server.getObjectTypeManager(),
@@ -99,75 +97,12 @@ public class SorterNamespace implements Namespace {
     }
 
     private UaObjectNode addConveyorObjectTypeAndInstance(UaFolderNode sorterFolder) throws UaException {
-        // Define a new ObjectType called "ConveyorType".
-        UaObjectTypeNode conveyorTypeNode = UaObjectTypeNode.builder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/ConveyorType"))
-                .setBrowseName(new QualifiedName(namespaceIndex, "ConveyorType"))
-                .setDisplayName(LocalizedText.english("ConveyorType"))
-                .setDescription(LocalizedText.english("Fisher Conveyor Belt 24V"))
-                .setIsAbstract(false)
-                .build();
+        UaObjectTypeNode conveyorTypeNode = ConveyorNodeUtils.createConveyorTypeNode(server,namespaceIndex);
+        UaVariableNode conveyorTypeVariableNodeMode = ConveyorNodeUtils.createConveyorModeInstanceDeclaration(conveyorTypeNode,server,namespaceIndex);
+        UaVariableNode conveyorTypeVariableNodeStatus = ConveyorNodeUtils.createConveyorStatusInstanceDeclaration(conveyorTypeNode,server,namespaceIndex);
 
+        registerType(conveyorTypeNode,Identifiers.BaseObjectType,Identifiers.HasSubtype,NodeClass.ObjectType);
 
-        // "Mode" and "Status" are members. These nodes are what are called "instance declarations" by the spec.
-        UaVariableNode conveyorTypeVariableNodeMode = UaVariableNode.builder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/ConveyorType.Mode"))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, "Mode"))
-                .setDisplayName(LocalizedText.english("Mode"))
-                .setDescription(LocalizedText.english("The Mode , Started/Stopped"))
-                .setDataType(Identifiers.ObjectNode)
-                .setTypeDefinition(Identifiers.MultiStateDiscreteType)
-                .build();
-
-        conveyorTypeVariableNodeMode.setValue(new DataValue(new Variant(ConveyorNodeUtils.MODE_STOPPED)));
-        conveyorTypeVariableNodeMode.setMinimumSamplingInterval(1.0);
-        conveyorTypeNode.addComponent(conveyorTypeVariableNodeMode);
-
-
-        UaVariableNode conveyorTypeVariableNodeStatus = UaVariableNode.builder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/ConveyorType.Status"))
-                .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
-                .setBrowseName(new QualifiedName(namespaceIndex, "Status"))
-                .setDisplayName(LocalizedText.english("Status"))
-                .setDescription(LocalizedText.english("The Status , On/Off"))
-                .setDataType(Identifiers.Boolean)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .setHistorizing(true)
-                .build();
-
-        conveyorTypeVariableNodeStatus.setValue(new DataValue(new Variant(false)));
-        conveyorTypeVariableNodeStatus.setMinimumSamplingInterval(1.0);
-        conveyorTypeNode.addComponent(conveyorTypeVariableNodeStatus);
-
-        // Tell the ObjectTypeManager about our new type.
-        // This let's us use NodeFactory to instantiate instances of the type.
-        server.getObjectTypeManager().registerObjectType(
-                conveyorTypeNode.getNodeId(),
-                UaObjectNode.class,
-                UaObjectNode::new
-        );
-
-        // Add our ObjectTypeNode as a subtype of BaseObjectType.
-        server.getUaNamespace().addReference(
-                Identifiers.BaseObjectType,
-                Identifiers.HasSubtype,
-                true,
-                conveyorTypeNode.getNodeId().expanded(),
-                NodeClass.ObjectType
-        );
-
-        // Add the inverse SubtypeOf relationship.
-        conveyorTypeNode.addReference(new Reference(
-                conveyorTypeNode.getNodeId(),
-                Identifiers.HasSubtype,
-                Identifiers.BaseObjectType.expanded(),
-                NodeClass.ObjectType,
-                false
-        ));
-
-        // Add it into the address space.
-        server.getNodeMap().addNode(conveyorTypeNode);
 
         // Use NodeFactory to create instance of ConveyorType called "Conveyor".
         // NodeFactory takes care of recursively instantiating MyObject member nodes
@@ -182,7 +117,7 @@ public class SorterNamespace implements Namespace {
 
         conveyor.getComponentNodes().stream()
                 .filter(isEqualVariableNode(conveyorTypeVariableNodeMode))
-                .forEach(variable -> {
+                .forEach((Node variable) -> {
 
                     MultiStateDiscreteNode multiStateDiscreteNode = (MultiStateDiscreteNode) variable;
                     multiStateDiscreteNode.setEnumStrings(ConveyorNodeUtils.modes);
@@ -206,6 +141,41 @@ public class SorterNamespace implements Namespace {
 
         return conveyor;
     }
+
+    private void registerType(UaObjectTypeNode conveyorTypeNode, NodeId sourceNodeId, NodeId referenceTypeId, NodeClass nodeClass) throws UaException {
+        // Tell the ObjectTypeManager about our new type.
+        // This let's us use NodeFactory to instantiate instances of the type.
+        server.getObjectTypeManager().registerObjectType(
+                conveyorTypeNode.getNodeId(),
+                UaObjectNode.class,
+                UaObjectNode::new
+        );
+
+        // Add our ObjectTypeNode as a subtype of BaseObjectType.
+        server.getUaNamespace().addReference(
+                sourceNodeId,
+                referenceTypeId,
+                true,
+                conveyorTypeNode.getNodeId().expanded(),
+                nodeClass
+        );
+
+        // Add the inverse SubtypeOf relationship.
+        conveyorTypeNode.addReference(new Reference(
+                conveyorTypeNode.getNodeId(),
+                referenceTypeId,
+                sourceNodeId.expanded(),
+                nodeClass,
+                false
+        ));
+
+        // Add it into the address space.
+        server.getNodeMap().addNode(conveyorTypeNode);
+    }
+
+
+
+
 
 
     private UaFolderNode createSorterFolder(OpcUaServer server, UShort namespaceIndex) throws UaException {

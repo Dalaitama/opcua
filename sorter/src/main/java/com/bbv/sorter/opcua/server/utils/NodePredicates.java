@@ -13,4 +13,7 @@ public interface NodePredicates {
       static Predicate<Node> isEqualVariableNode(UaVariableNode variableNode) {
         return x -> x.getBrowseName().equals(variableNode.getBrowseName());
     }
+    static Predicate<Node> isEqualVariableNode(UaVariableNode variableNode, Class<Node> clazz) {
+        return x -> x.getBrowseName().equals(variableNode.getBrowseName()) && clazz.isInstance(x);
+    }
 }
