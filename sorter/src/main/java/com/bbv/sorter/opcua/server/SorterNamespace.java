@@ -15,14 +15,18 @@ package com.bbv.sorter.opcua.server;
 
 import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
 import com.bbv.sorter.opcua.server.methods.ChangeConveyorModeMethod;
+import com.bbv.sorter.opcua.server.utils.ConveyorNodeUtils;
 import com.google.common.collect.Lists;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.sdk.core.Reference;
 import org.eclipse.milo.opcua.sdk.core.ValueRank;
+import org.eclipse.milo.opcua.sdk.core.annotations.UaVariableType;
 import org.eclipse.milo.opcua.sdk.server.OpcUaServer;
 import org.eclipse.milo.opcua.sdk.server.api.*;
 import org.eclipse.milo.opcua.sdk.server.api.nodes.VariableNode;
 import org.eclipse.milo.opcua.sdk.server.model.nodes.variables.AnalogItemNode;
+import org.eclipse.milo.opcua.sdk.server.model.nodes.variables.MultiStateDiscreteNode;
+import org.eclipse.milo.opcua.sdk.server.model.nodes.variables.PropertyNode;
 import org.eclipse.milo.opcua.sdk.server.nodes.*;
 import org.eclipse.milo.opcua.sdk.server.nodes.delegates.AttributeDelegate;
 import org.eclipse.milo.opcua.sdk.server.nodes.delegates.AttributeDelegateChain;
@@ -39,6 +43,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
+import org.eclipse.milo.opcua.stack.core.types.structured.EUInformation;
 import org.eclipse.milo.opcua.stack.core.types.structured.Range;
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
 import org.eclipse.milo.opcua.stack.core.types.structured.WriteValue;
@@ -99,9 +104,10 @@ public class SorterNamespace implements Namespace {
                 .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/ConveyorType"))
                 .setBrowseName(new QualifiedName(namespaceIndex, "ConveyorType"))
                 .setDisplayName(LocalizedText.english("ConveyorType"))
-                .setDescription(LocalizedText.english("Depict a Conveyor of Fisher Model xxyy"))
+                .setDescription(LocalizedText.english("Fisher Conveyor Belt 24V"))
                 .setIsAbstract(false)
                 .build();
+
 
         // "Mode" and "Status" are members. These nodes are what are called "instance declarations" by the spec.
         UaVariableNode conveyorTypeVariableNodeMode = UaVariableNode.builder(server.getNodeMap())
@@ -110,13 +116,12 @@ public class SorterNamespace implements Namespace {
                 .setBrowseName(new QualifiedName(namespaceIndex, "Mode"))
                 .setDisplayName(LocalizedText.english("Mode"))
                 .setDescription(LocalizedText.english("The Mode , Started/Stopped"))
-                .setDataType(Identifiers.Boolean)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
+                .setDataType(Identifiers.ObjectNode)
+                .setTypeDefinition(Identifiers.MultiStateDiscreteType)
                 .build();
 
-        conveyorTypeVariableNodeMode.setValue(new DataValue(new Variant(false)));
+        conveyorTypeVariableNodeMode.setValue(new DataValue(new Variant(ConveyorNodeUtils.MODE_STOPPED)));
         conveyorTypeVariableNodeMode.setMinimumSamplingInterval(1.0);
-
         conveyorTypeNode.addComponent(conveyorTypeVariableNodeMode);
 
 
@@ -128,6 +133,7 @@ public class SorterNamespace implements Namespace {
                 .setDescription(LocalizedText.english("The Status , On/Off"))
                 .setDataType(Identifiers.Boolean)
                 .setTypeDefinition(Identifiers.BaseDataVariableType)
+                .setHistorizing(true)
                 .build();
 
         conveyorTypeVariableNodeStatus.setValue(new DataValue(new Variant(false)));
@@ -176,10 +182,15 @@ public class SorterNamespace implements Namespace {
 
         conveyor.getComponentNodes().stream()
                 .filter(isEqualVariableNode(conveyorTypeVariableNodeMode))
-                .forEach(variable -> ((UaVariableNode) variable).setAttributeDelegate(getModeAttributeDelegate()));
+                .forEach(variable -> {
+
+                    MultiStateDiscreteNode multiStateDiscreteNode = (MultiStateDiscreteNode) variable;
+                    multiStateDiscreteNode.setEnumStrings(ConveyorNodeUtils.modes);
+                    multiStateDiscreteNode.setAttributeDelegate(ConveyorNodeUtils.getModeAttributeDelegate());
+                });
         conveyor.getComponentNodes().stream()
                 .filter(isEqualVariableNode(conveyorTypeVariableNodeStatus))
-                .forEach(variable -> ((UaVariableNode) variable).setAttributeDelegate(getStatusAttributeDelegate()));
+                .forEach(variable -> ((UaVariableNode) variable).setAttributeDelegate(ConveyorNodeUtils.getStatusAttributeDelegate()));
 
 
         // Add forward and inverse references from the root folder.
@@ -262,23 +273,7 @@ public class SorterNamespace implements Namespace {
         }
     }
 
-    private AttributeDelegate getModeAttributeDelegate() {
-        return new AttributeDelegate() {
-            @Override
-            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                return new DataValue(new Variant(ConveyorFactory.createConveyor().getMode()));
-            }
-        };
-    }
 
-    private AttributeDelegate getStatusAttributeDelegate() {
-        return new AttributeDelegate() {
-            @Override
-            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                return new DataValue(new Variant(ConveyorFactory.createConveyor().getStatus()));
-            }
-        };
-    }
 
     @Override
     public UShort getNamespaceIndex() {
