@@ -5,7 +5,7 @@ public final class ConveyorFactory {
 
 
 
-    public static Conveyor createConveyor() {
+    public static Conveyor getInstance() {
         return  ConveyorMock.getInstance();
     }
 }

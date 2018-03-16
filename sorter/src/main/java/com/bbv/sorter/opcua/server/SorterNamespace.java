@@ -13,55 +13,34 @@
 
 package com.bbv.sorter.opcua.server;
 
-import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
-import com.bbv.sorter.opcua.server.methods.ChangeConveyorModeMethod;
 import com.bbv.sorter.opcua.server.utils.ConveyorNodeUtils;
+import com.bbv.sorter.opcua.server.utils.ConveyorSpeedUtils;
+import com.bbv.sorter.opcua.server.utils.LightBarrierUtils;
 import com.google.common.collect.Lists;
-import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.sdk.core.Reference;
-import org.eclipse.milo.opcua.sdk.core.ValueRank;
-import org.eclipse.milo.opcua.sdk.core.annotations.UaVariableType;
 import org.eclipse.milo.opcua.sdk.server.OpcUaServer;
 import org.eclipse.milo.opcua.sdk.server.api.*;
-import org.eclipse.milo.opcua.sdk.server.api.nodes.Node;
-import org.eclipse.milo.opcua.sdk.server.api.nodes.VariableNode;
-import org.eclipse.milo.opcua.sdk.server.model.nodes.variables.AnalogItemNode;
-import org.eclipse.milo.opcua.sdk.server.model.nodes.variables.MultiStateDiscreteNode;
-import org.eclipse.milo.opcua.sdk.server.model.nodes.variables.PropertyNode;
 import org.eclipse.milo.opcua.sdk.server.nodes.*;
-import org.eclipse.milo.opcua.sdk.server.nodes.delegates.AttributeDelegate;
-import org.eclipse.milo.opcua.sdk.server.nodes.delegates.AttributeDelegateChain;
-import org.eclipse.milo.opcua.sdk.server.util.AnnotationBasedInvocationHandler;
 import org.eclipse.milo.opcua.sdk.server.util.SubscriptionModel;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
 import org.eclipse.milo.opcua.stack.core.Identifiers;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaException;
-import org.eclipse.milo.opcua.stack.core.types.OpcUaBinaryDataTypeDictionary;
-import org.eclipse.milo.opcua.stack.core.types.OpcUaDataTypeManager;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
-import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
-import org.eclipse.milo.opcua.stack.core.types.structured.EUInformation;
-import org.eclipse.milo.opcua.stack.core.types.structured.Range;
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
 import org.eclipse.milo.opcua.stack.core.types.structured.WriteValue;
 import org.eclipse.milo.opcua.stack.core.util.FutureUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.bbv.sorter.opcua.server.types.CustomDataType;
 
-import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.bbv.sorter.opcua.server.utils.NodePredicates.isEqualVariableNode;
-import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.*;
 
 public class SorterNamespace implements Namespace {
 
@@ -73,6 +52,7 @@ public class SorterNamespace implements Namespace {
 
     private final SubscriptionModel subscriptionModel;
     private final NodeFactory nodeFactory;
+
     private final OpcUaServer server;
     private final UShort namespaceIndex;
 
@@ -89,46 +69,16 @@ public class SorterNamespace implements Namespace {
 
         try {
             UaFolderNode sorterFolder = createSorterFolder(server, namespaceIndex);
-            UaObjectNode instance = addConveyorObjectTypeAndInstance(sorterFolder);
-            addMethodNode(instance);
+            UaObjectNode conveyor = createConveyor(sorterFolder);
+
+            organizeInFolder(sorterFolder, conveyor);
         } catch (UaException e) {
             logger.error("Error adding nodes: {}", e.getMessage(), e);
         }
     }
 
-    private UaObjectNode addConveyorObjectTypeAndInstance(UaFolderNode sorterFolder) throws UaException {
-        UaObjectTypeNode conveyorTypeNode = ConveyorNodeUtils.createConveyorTypeNode(server,namespaceIndex);
-        UaVariableNode conveyorTypeVariableNodeMode = ConveyorNodeUtils.createConveyorModeInstanceDeclaration(conveyorTypeNode,server,namespaceIndex);
-        UaVariableNode conveyorTypeVariableNodeStatus = ConveyorNodeUtils.createConveyorStatusInstanceDeclaration(conveyorTypeNode,server,namespaceIndex);
-
-        registerType(conveyorTypeNode,Identifiers.BaseObjectType,Identifiers.HasSubtype,NodeClass.ObjectType);
-
-
-        // Use NodeFactory to create instance of ConveyorType called "Conveyor".
-        // NodeFactory takes care of recursively instantiating MyObject member nodes
-        // as well as adding all nodes to the address space.
-        UaObjectNode conveyor = nodeFactory.createObject(
-                new NodeId(namespaceIndex, "Sorter/Conveyor"),
-                new QualifiedName(namespaceIndex, "Conveyor"),
-                LocalizedText.english("Conveyor"),
-                conveyorTypeNode.getNodeId()
-        );
-
-
-        conveyor.getComponentNodes().stream()
-                .filter(isEqualVariableNode(conveyorTypeVariableNodeMode))
-                .forEach((Node variable) -> {
-
-                    MultiStateDiscreteNode multiStateDiscreteNode = (MultiStateDiscreteNode) variable;
-                    multiStateDiscreteNode.setEnumStrings(ConveyorNodeUtils.modes);
-                    multiStateDiscreteNode.setAttributeDelegate(ConveyorNodeUtils.getModeAttributeDelegate());
-                });
-        conveyor.getComponentNodes().stream()
-                .filter(isEqualVariableNode(conveyorTypeVariableNodeStatus))
-                .forEach(variable -> ((UaVariableNode) variable).setAttributeDelegate(ConveyorNodeUtils.getStatusAttributeDelegate()));
-
-
-        // Add forward and inverse references from the root folder.
+    // Add forward and inverse references from the root folder.
+    private void organizeInFolder(UaFolderNode sorterFolder, UaObjectNode conveyor) {
         sorterFolder.addOrganizes(conveyor);
 
         conveyor.addReference(new Reference(
@@ -138,9 +88,25 @@ public class SorterNamespace implements Namespace {
                 sorterFolder.getNodeClass(),
                 false
         ));
+    }
+
+    private UaObjectNode createConveyor(UaFolderNode sorterFolder) throws UaException {
+        UaObjectTypeNode conveyorTypeNode = ConveyorNodeUtils.createConveyorTypeNode(server, namespaceIndex);
+        UaVariableNode conveyorTypeVariableNodeMode = ConveyorNodeUtils.addConveyorModeInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
+        UaVariableNode conveyorTypeVariableNodeStatus = ConveyorNodeUtils.addConveyorStatusInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
+        // Doesn't work,... ConveyorNodeUtils.addChangeConveyorMethodNodeInstanceDefinition(conveyorTypeNode, server, namespaceIndex);
+        UaVariableNode speedInticatorTypeVariable = ConveyorSpeedUtils.addSpeedInticatorInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
+        registerType(conveyorTypeNode, Identifiers.BaseObjectType, Identifiers.HasSubtype, NodeClass.ObjectType);
+
+        UaObjectNode conveyor = ConveyorNodeUtils.createConveyorInstance(conveyorTypeNode, conveyorTypeVariableNodeMode, conveyorTypeVariableNodeStatus, speedInticatorTypeVariable, nodeFactory, namespaceIndex);
+
+        ConveyorNodeUtils.addChangeConveyorMethodNode(conveyor, server, namespaceIndex);
+        LightBarrierUtils.addLightBarriers(conveyor, server, namespaceIndex);
+        ConveyorSpeedUtils.addConveyorSpeedIndicatorNode(conveyor, server, namespaceIndex);
 
         return conveyor;
     }
+
 
     private void registerType(UaObjectTypeNode conveyorTypeNode, NodeId sourceNodeId, NodeId referenceTypeId, NodeClass nodeClass) throws UaException {
         // Tell the ObjectTypeManager about our new type.
@@ -174,10 +140,6 @@ public class SorterNamespace implements Namespace {
     }
 
 
-
-
-
-
     private UaFolderNode createSorterFolder(OpcUaServer server, UShort namespaceIndex) throws UaException {
         // Create a "Sorter" folder and add it to the node manager
         NodeId folderNodeId = new NodeId(namespaceIndex, "Sorter");
@@ -201,48 +163,6 @@ public class SorterNamespace implements Namespace {
         );
         return folderNode;
     }
-
-    private void addMethodNode(UaObjectNode objectNode) {
-        UaMethodNode methodNode = UaMethodNode.builder(server.getNodeMap())
-                .setNodeId(new NodeId(namespaceIndex, "Sorter/Conveyor/start"))
-                .setBrowseName(new QualifiedName(namespaceIndex, "start"))
-                .setDisplayName(new LocalizedText(null, "start"))
-                .setDescription(
-                        LocalizedText.english("Start the Conveyor"))
-                .build();
-
-
-        try {
-            AnnotationBasedInvocationHandler invocationHandler =
-                    AnnotationBasedInvocationHandler.fromAnnotatedObject(
-                            server.getNodeMap(), new ChangeConveyorModeMethod());
-
-            methodNode.setProperty(UaMethodNode.InputArguments, invocationHandler.getInputArguments());
-            methodNode.setProperty(UaMethodNode.OutputArguments, invocationHandler.getOutputArguments());
-            methodNode.setInvocationHandler(invocationHandler);
-
-            server.getNodeMap().addNode(methodNode);
-
-            objectNode.addReference(new Reference(
-                    objectNode.getNodeId(),
-                    Identifiers.HasComponent,
-                    methodNode.getNodeId().expanded(),
-                    methodNode.getNodeClass(),
-                    true
-            ));
-
-            methodNode.addReference(new Reference(
-                    methodNode.getNodeId(),
-                    Identifiers.HasComponent,
-                    objectNode.getNodeId().expanded(),
-                    objectNode.getNodeClass(),
-                    false
-            ));
-        } catch (Exception e) {
-            logger.error("Error creating sqrt() method.", e);
-        }
-    }
-
 
 
     @Override

@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 public interface ClientExample {
 
     default String getEndpointUrl() {
-        return "opc.tcp://localhost:12686/example";
+        return "opc.tcp://localhost:12686/color-sorter";
     }
 
     default SecurityPolicy getSecurityPolicy() {

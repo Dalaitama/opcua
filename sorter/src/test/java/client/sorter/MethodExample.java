@@ -16,6 +16,7 @@ package client.sorter;
 import client.ClientExample;
 import client.ClientExampleRunner;
 import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
+import com.bbv.sorter.opcua.server.utils.ConveyorNodeUtils;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
@@ -49,21 +50,28 @@ public class MethodExample implements ClientExample {
 
         // call the start(x) function
         boolean input = true;
-        changeMode(client, future, true);
+        changeMode(client, future, ConveyorNodeUtils.MODE_STARTED.getText());
         Thread.sleep(1000);
-        changeMode(client, future, false); Thread.sleep(1000);
-        changeMode(client, future, true); Thread.sleep(1000);
-        changeMode(client, future, false); Thread.sleep(1000);
-        changeMode(client, future, true); Thread.sleep(1000);
-        changeMode(client, future, false); Thread.sleep(1000);
+        changeMode(client, future, ConveyorNodeUtils.MODE_STOPPED.getText());
+        Thread.sleep(1000);
+        changeMode(client, future, ConveyorNodeUtils.MODE_STARTED.getText());
+        Thread.sleep(1000);
+        changeMode(client, future, ConveyorNodeUtils.MODE_STOPPED.getText());
+        Thread.sleep(1000);
+        changeMode(client, future, ConveyorNodeUtils.MODE_STARTED.getText());
+        Thread.sleep(1000);
+        changeMode(client, future, ConveyorNodeUtils.MODE_STOPPED.getText());
+        Thread.sleep(1000);
+        changeMode(client, future, "banana");
+        Thread.sleep(1000);
 
         future.complete(client);
     }
 
-    private void changeMode(OpcUaClient client, CompletableFuture<OpcUaClient> future, boolean input) {
+    private void changeMode(OpcUaClient client, CompletableFuture<OpcUaClient> future, String input) {
         start(client, input).exceptionally(ex -> {
             logger.error("error invoking start()", ex);
-            return false;
+            return "Something went wrong";
         }).thenAccept(v -> {
             logger.info("start={}", v);
 
@@ -71,10 +79,10 @@ public class MethodExample implements ClientExample {
         });
     }
 
-    private CompletableFuture<Boolean> start(OpcUaClient client, Boolean input) {
+    private CompletableFuture<String> start(OpcUaClient client, String input) {
         UShort index = client.getNamespaceTable().getIndex("urn:bbv:fischer:color-sorter");
         NodeId objectId = new NodeId(index, "Sorter/Conveyor");
-        NodeId methodId = new NodeId(index, "Sorter/Conveyor/start");
+        NodeId methodId = new NodeId(index, "Sorter/Conveyor.ChangeMode");
 
 
         CallMethodRequest request = new CallMethodRequest(
@@ -85,10 +93,10 @@ public class MethodExample implements ClientExample {
             StatusCode statusCode = result.getStatusCode();
 
             if (statusCode.isGood()) {
-                Boolean value = (Boolean) l(result.getOutputArguments()).get(0).getValue();
+                String value = (String) l(result.getOutputArguments()).get(0).getValue();
                 return CompletableFuture.completedFuture(value);
             } else {
-                CompletableFuture<Boolean> f = new CompletableFuture<>();
+                CompletableFuture<String> f = new CompletableFuture<>();
                 f.completeExceptionally(new UaException(statusCode));
                 return f;
             }

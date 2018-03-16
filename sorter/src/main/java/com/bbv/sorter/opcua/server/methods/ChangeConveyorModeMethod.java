@@ -14,13 +14,18 @@
 package com.bbv.sorter.opcua.server.methods;
 
 import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
+import com.bbv.sorter.opcua.server.utils.ConveyorNodeUtils;
 import org.eclipse.milo.opcua.sdk.server.annotations.UaInputArgument;
 import org.eclipse.milo.opcua.sdk.server.annotations.UaMethod;
 import org.eclipse.milo.opcua.sdk.server.annotations.UaOutputArgument;
 import org.eclipse.milo.opcua.sdk.server.util.AnnotationBasedInvocationHandler.InvocationContext;
 import org.eclipse.milo.opcua.sdk.server.util.AnnotationBasedInvocationHandler.Out;
+import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class ChangeConveyorModeMethod {
 
@@ -33,24 +38,29 @@ public class ChangeConveyorModeMethod {
         @UaInputArgument(
             name = "mode",
             description = "the wanted mode")
-            Boolean start,
+            String mode,
 
         @UaOutputArgument(
             name = "result",
             description = "True or False.")
-            Out<Boolean> result) {
+            Out<String> result) {
 
-        System.out.println("start(" + start.toString() + ")");
-        logger.debug("Invoking start() method of Object '{}'", context.getObjectNode().getBrowseName().getName());
+        System.out.println("mode(" + mode.toString() + ")");
+        logger.debug("Invoking mode() method of Object '{}'", context.getObjectNode().getBrowseName().getName());
 
-        if (start){
-            ConveyorFactory.createConveyor().start();
+        if (ConveyorNodeUtils.MODE_STARTED.getText().equals(mode)){
+            ConveyorFactory.getInstance().start();
+            result.set(mode);
+        }else if (ConveyorNodeUtils.MODE_STOPPED.getText().equals(mode)){
+            ConveyorFactory.getInstance().stop();
+            result.set(mode);
+
         }else{
-            ConveyorFactory.createConveyor().stop();
 
+            result.set(String.format("Mode '%s' Unknown, possible values; %s",mode, Arrays.stream(ConveyorNodeUtils.MODES).map(LocalizedText::getText).collect(Collectors.toList())));
         }
 
-        result.set(start);
+
 
     }
 

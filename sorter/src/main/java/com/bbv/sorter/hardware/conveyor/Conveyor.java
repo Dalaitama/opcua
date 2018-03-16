@@ -25,6 +25,11 @@ public interface Conveyor {
 
     void stop();
 
+    boolean readLightBarrier1();
+    boolean readLightBarrier2();
+    boolean readLightBarrier3();
+    double readSpeed();
+
 
 
 }

@@ -44,7 +44,7 @@ public class ReadNodeExample implements ClientExample {
         NodeId nodeId = new NodeId(index, "Sorter/Conveyor/Mode");
         printConveyorMode(client, index, nodeId);
 
-        ConveyorFactory.createConveyor().start();
+        ConveyorFactory.getInstance().start();
 
         printConveyorMode(client, index, nodeId);
 

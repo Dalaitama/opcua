@@ -32,7 +32,7 @@ public class ReadConveyorModeExample implements ClientExample {
     public static void main(String[] args) throws Exception {
         ReadConveyorModeExample example = new ReadConveyorModeExample();
 
-        new ClientExampleRunner(example, true).run();
+        new ClientExampleRunner(example, false).run();
     }
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -46,7 +46,7 @@ public class ReadConveyorModeExample implements ClientExample {
         NodeId nodeId = new NodeId(index, "Sorter/Conveyor.Mode");
         printConveyorMode(client, index, nodeId);
 
-        ConveyorFactory.createConveyor().start();
+        ConveyorFactory.getInstance().start();
 
         Thread.sleep(1000);
 

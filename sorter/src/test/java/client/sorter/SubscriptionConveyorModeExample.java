@@ -108,13 +108,13 @@ public class SubscriptionConveyorModeExample implements ClientExample {
 
         // let the example run for 5 seconds then terminate
         Thread.sleep(500);
-        ConveyorFactory.createConveyor().start();
+        ConveyorFactory.getInstance().start();
         Thread.sleep(500);
-        ConveyorFactory.createConveyor().stop();
+        ConveyorFactory.getInstance().stop();
         Thread.sleep(500);
-        ConveyorFactory.createConveyor().start();
+        ConveyorFactory.getInstance().start();
         Thread.sleep(500);
-        ConveyorFactory.createConveyor().stop();
+        ConveyorFactory.getInstance().stop();
         Thread.sleep(500);
         future.complete(client);
     }

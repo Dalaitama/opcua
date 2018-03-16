@@ -121,7 +121,7 @@ public class SorterServer {
             .setEndpointAddresses(endpointAddresses)
             .setBuildInfo(
                 new BuildInfo(
-                    "urn:eclipse:milo:example-server",
+                    "urn:bbv:fischer:color-sorter-server",
                     "eclipse",
                     "eclipse milo example server",
                     OpcUaServer.SDK_VERSION,
@@ -129,8 +129,8 @@ public class SorterServer {
             .setCertificateManager(certificateManager)
             .setCertificateValidator(certificateValidator)
             .setIdentityValidator(new CompositeValidator(identityValidator, x509IdentityValidator))
-            .setProductUri("urn:eclipse:milo:example-server")
-            .setServerName("example")
+            .setProductUri("urn:bbv:fischer:color-sorter-server")
+            .setServerName("color-sorter")
             .setSecurityPolicies(
                 EnumSet.of(
                     SecurityPolicy.None,

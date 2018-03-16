@@ -26,7 +26,7 @@
     </logger>
 
     <!-- turn OFF all logging (children can override) -->
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
