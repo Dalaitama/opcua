@@ -14,8 +14,11 @@ public class ConveyorMock implements Conveyor {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    volatile boolean status = false;
-    volatile boolean mode = false;
+    private volatile boolean status = false;
+    private volatile boolean mode = false;
+    private volatile boolean valve1 = false;
+    private volatile boolean valve2 = false;
+    private volatile boolean valve3 = false;
 
     private final Random random = new Random();
 
@@ -51,22 +54,57 @@ public class ConveyorMock implements Conveyor {
 
     @Override
     public boolean readLightBarrier1() {
-        return  mode ?  random.nextBoolean(): false;
+        return getRandomBoolean();
     }
 
     @Override
     public boolean readLightBarrier2() {
-        return  mode ?  random.nextBoolean(): false;
+        return getRandomBoolean();
     }
+
 
     @Override
     public boolean readLightBarrier3() {
-        return  mode ?  random.nextBoolean(): false;
+        return getRandomBoolean();
     }
 
     @Override
     public double readSpeed() {
-        return  mode ?  random.nextInt(10):0.0;
+        return mode ? random.nextInt(10) : 0.0;
+    }
+
+    @Override
+    public boolean readValve1() {
+        return valve1;
+    }
+
+    @Override
+    public boolean readValve2() {
+        return valve2;
+    }
+
+    @Override
+    public boolean readValve3() {
+        return valve3;
+    }
+
+    @Override
+    public void setValve1(boolean pressure) {
+        valve1 = pressure;
+    }
+
+    @Override
+    public void setValve2(boolean pressure) {
+        valve2 = pressure;
+    }
+
+    @Override
+    public void setValve3(boolean pressure) {
+        valve3 = pressure;
+    }
+
+    private boolean getRandomBoolean() {
+        return mode ? random.nextBoolean() : false;
     }
 
 

@@ -3,6 +3,7 @@ package com.bbv.sorter.opcua.server.utils;
 import com.bbv.sorter.hardware.conveyor.Conveyor;
 import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
 import com.bbv.sorter.opcua.server.SorterNamespace;
+import com.bbv.sorter.opcua.server.ValueLoggingDelegate;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.sdk.core.WriteMask;
 import org.eclipse.milo.opcua.sdk.server.OpcUaServer;
@@ -13,6 +14,7 @@ import org.eclipse.milo.opcua.sdk.server.nodes.UaObjectNode;
 import org.eclipse.milo.opcua.sdk.server.nodes.UaObjectTypeNode;
 import org.eclipse.milo.opcua.sdk.server.nodes.UaVariableNode;
 import org.eclipse.milo.opcua.sdk.server.nodes.delegates.AttributeDelegate;
+import org.eclipse.milo.opcua.sdk.server.nodes.delegates.AttributeDelegateChain;
 import org.eclipse.milo.opcua.stack.core.Identifiers;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
@@ -33,8 +35,6 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 public interface ConveyorSpeedUtils {
 
 
-
-
     static AttributeDelegate getSpeedDelegate() {
         return new AttributeDelegate() {
             @Override
@@ -42,11 +42,11 @@ public interface ConveyorSpeedUtils {
                 return new DataValue(new Variant(ConveyorFactory.getInstance().readSpeed()));
             }
         };
+
     }
 
 
-    @Deprecated
-    static UaVariableNode addSpeedInticatorInstanceDeclaration(UaObjectTypeNode conveyorTypeNode, OpcUaServer server, UShort namespaceIndex ) {
+    static UaVariableNode addSpeedInticatorInstanceDeclaration(UaObjectTypeNode conveyorTypeNode, OpcUaServer server, UShort namespaceIndex) {
 
         NodeId nodeId = new NodeId(namespaceIndex, "Sorter/Conveyor.SpeedIndicator");
         UByte ubyte = ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE));

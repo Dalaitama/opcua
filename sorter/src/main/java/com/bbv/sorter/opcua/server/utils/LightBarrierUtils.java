@@ -2,11 +2,13 @@ package com.bbv.sorter.opcua.server.utils;
 
 import com.bbv.sorter.hardware.conveyor.Conveyor;
 import com.bbv.sorter.hardware.conveyor.ConveyorFactory;
+import com.bbv.sorter.opcua.server.ValueLoggingDelegate;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.sdk.server.OpcUaServer;
 import org.eclipse.milo.opcua.sdk.server.api.nodes.VariableNode;
 import org.eclipse.milo.opcua.sdk.server.nodes.*;
 import org.eclipse.milo.opcua.sdk.server.nodes.delegates.AttributeDelegate;
+import org.eclipse.milo.opcua.sdk.server.nodes.delegates.AttributeDelegateChain;
 import org.eclipse.milo.opcua.stack.core.Identifiers;
 import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
@@ -50,40 +52,17 @@ public interface LightBarrierUtils {
     }
 
     static AttributeDelegate getReadLBDelegate(Function<Conveyor,Boolean> consumer){
-        return new AttributeDelegate() {
-            @Override
-            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                return new DataValue(new Variant(consumer.apply(ConveyorFactory.getInstance())));
-            }
-        };
+        return
+                new AttributeDelegate() {
+                    @Override
+                    public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
+                        return new DataValue(new Variant(consumer.apply(ConveyorFactory.getInstance())));
+                    }
+                };
+
     }
 
-    static AttributeDelegate getReadLB1Delegate() {
-        return new AttributeDelegate() {
-            @Override
-            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                return new DataValue(new Variant(ConveyorFactory.getInstance().readLightBarrier1()));
-            }
-        };
-    }
 
-    static AttributeDelegate getReadLB2Delegate() {
-        return new AttributeDelegate() {
-            @Override
-            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                return new DataValue(new Variant(ConveyorFactory.getInstance().readLightBarrier2()));
-            }
-        };
-    }
-
-    static AttributeDelegate getReadLB3Delegate() {
-        return new AttributeDelegate() {
-            @Override
-            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                return new DataValue(new Variant(ConveyorFactory.getInstance().readLightBarrier3()));
-            }
-        };
-    }
 
 
 }

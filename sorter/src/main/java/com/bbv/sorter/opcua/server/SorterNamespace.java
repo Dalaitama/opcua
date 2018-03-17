@@ -13,6 +13,7 @@
 
 package com.bbv.sorter.opcua.server;
 
+import com.bbv.sorter.opcua.server.utils.CompressorNodeUtils;
 import com.bbv.sorter.opcua.server.utils.ConveyorNodeUtils;
 import com.bbv.sorter.opcua.server.utils.ConveyorSpeedUtils;
 import com.bbv.sorter.opcua.server.utils.LightBarrierUtils;
@@ -47,6 +48,7 @@ public class SorterNamespace implements Namespace {
     public static final String NAMESPACE_URI = "urn:bbv:fischer:color-sorter";
 
 
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
 
@@ -56,7 +58,7 @@ public class SorterNamespace implements Namespace {
     private final OpcUaServer server;
     private final UShort namespaceIndex;
 
-    public SorterNamespace(OpcUaServer server, UShort namespaceIndex) {
+    SorterNamespace(OpcUaServer server, UShort namespaceIndex) {
         this.server = server;
         this.namespaceIndex = namespaceIndex;
 
@@ -70,8 +72,9 @@ public class SorterNamespace implements Namespace {
         try {
             UaFolderNode sorterFolder = createSorterFolder(server, namespaceIndex);
             UaObjectNode conveyor = createConveyor(sorterFolder);
-
             organizeInFolder(sorterFolder, conveyor);
+            UaObjectNode compressor = createCompressor(sorterFolder);
+            organizeInFolder(sorterFolder, compressor);
         } catch (UaException e) {
             logger.error("Error adding nodes: {}", e.getMessage(), e);
         }
@@ -92,19 +95,33 @@ public class SorterNamespace implements Namespace {
 
     private UaObjectNode createConveyor(UaFolderNode sorterFolder) throws UaException {
         UaObjectTypeNode conveyorTypeNode = ConveyorNodeUtils.createConveyorTypeNode(server, namespaceIndex);
-        UaVariableNode conveyorTypeVariableNodeMode = ConveyorNodeUtils.addConveyorModeInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
-        UaVariableNode conveyorTypeVariableNodeStatus = ConveyorNodeUtils.addConveyorStatusInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
-        // Doesn't work,... ConveyorNodeUtils.addChangeConveyorMethodNodeInstanceDefinition(conveyorTypeNode, server, namespaceIndex);
-        UaVariableNode speedInticatorTypeVariable = ConveyorSpeedUtils.addSpeedInticatorInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
+        UaVariableNode modeInstanceDeclaration = ConveyorNodeUtils.addModeInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
+        UaVariableNode statusInstanceDeclaration = ConveyorNodeUtils.addStatusInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
+        UaVariableNode speedInticatorInstanceDeclaration = ConveyorSpeedUtils.addSpeedInticatorInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
         registerType(conveyorTypeNode, Identifiers.BaseObjectType, Identifiers.HasSubtype, NodeClass.ObjectType);
 
-        UaObjectNode conveyor = ConveyorNodeUtils.createConveyorInstance(conveyorTypeNode, conveyorTypeVariableNodeMode, conveyorTypeVariableNodeStatus, speedInticatorTypeVariable, nodeFactory, namespaceIndex);
+        UaObjectNode conveyor = ConveyorNodeUtils.createConveyorInstance(conveyorTypeNode, modeInstanceDeclaration, statusInstanceDeclaration, speedInticatorInstanceDeclaration, nodeFactory, namespaceIndex);
 
         ConveyorNodeUtils.addChangeConveyorMethodNode(conveyor, server, namespaceIndex);
         LightBarrierUtils.addLightBarriers(conveyor, server, namespaceIndex);
-        ConveyorSpeedUtils.addConveyorSpeedIndicatorNode(conveyor, server, namespaceIndex);
+
 
         return conveyor;
+    }
+
+    private UaObjectNode createCompressor(UaFolderNode sorterFolder) throws UaException {
+        UaObjectTypeNode compressorTypeNode = CompressorNodeUtils.createCompressorTypeNode(server, namespaceIndex);
+        UaVariableNode compressorValve1InstanceDeclaration = CompressorNodeUtils.addCompressorValveInstanceDeclaration(compressorTypeNode, server, namespaceIndex, CompressorNodeUtils.V1 );
+        UaVariableNode compressorValve2InstanceDeclaration = CompressorNodeUtils.addCompressorValveInstanceDeclaration(compressorTypeNode, server, namespaceIndex, CompressorNodeUtils.V2 );
+        UaVariableNode compressorValve3InstanceDeclaration = CompressorNodeUtils.addCompressorValveInstanceDeclaration(compressorTypeNode, server, namespaceIndex, CompressorNodeUtils.V3 );
+
+        registerType(compressorTypeNode, Identifiers.BaseObjectType, Identifiers.HasSubtype, NodeClass.ObjectType);
+
+        UaObjectNode compressor = CompressorNodeUtils.createCompressorInstance(compressorTypeNode, compressorValve1InstanceDeclaration, compressorValve2InstanceDeclaration, compressorValve3InstanceDeclaration, nodeFactory, namespaceIndex);
+
+        CompressorNodeUtils.addChangeConveyorMethodNode(compressor,server,namespaceIndex);
+
+        return compressor;
     }
 
 

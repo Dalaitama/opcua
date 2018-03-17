@@ -29,6 +29,12 @@ public interface Conveyor {
     boolean readLightBarrier2();
     boolean readLightBarrier3();
     double readSpeed();
+    boolean readValve1();
+    boolean readValve2();
+    boolean readValve3();
+    void setValve1(boolean pressure);
+    void setValve2(boolean pressure);
+    void setValve3(boolean pressure);
 
 
 

@@ -115,7 +115,8 @@ public class SorterServer {
 
         OpcUaServerConfig serverConfig = OpcUaServerConfig.builder()
             .setApplicationUri(applicationUri)
-            .setApplicationName(LocalizedText.english("Eclipse Milo OPC UA Example Server"))
+            .setApplicationName(LocalizedText.english("BBV OPC UA Showcase Server"))
+                .setApplicationName(LocalizedText.english("Fisher Color Sorter"))
             .setBindPort(12686)
             .setBindAddresses(bindAddresses)
             .setEndpointAddresses(endpointAddresses)
