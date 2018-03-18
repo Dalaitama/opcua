@@ -97,7 +97,7 @@ public class SorterNamespace implements Namespace {
         UaObjectTypeNode conveyorTypeNode = ConveyorNodeUtils.createConveyorTypeNode(server, namespaceIndex);
         UaVariableNode modeInstanceDeclaration = ConveyorNodeUtils.addModeInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
         UaVariableNode statusInstanceDeclaration = ConveyorNodeUtils.addStatusInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
-        UaVariableNode speedInticatorInstanceDeclaration = ConveyorSpeedUtils.addSpeedInticatorInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
+        UaVariableNode speedInticatorInstanceDeclaration = ConveyorSpeedUtils.addSpeedIndicatorInstanceDeclaration(conveyorTypeNode, server, namespaceIndex);
         registerType(conveyorTypeNode, Identifiers.BaseObjectType, Identifiers.HasSubtype, NodeClass.ObjectType);
 
         UaObjectNode conveyor = ConveyorNodeUtils.createConveyorInstance(conveyorTypeNode, modeInstanceDeclaration, statusInstanceDeclaration, speedInticatorInstanceDeclaration, nodeFactory, namespaceIndex);

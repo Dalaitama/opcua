@@ -54,10 +54,10 @@ class KeyStoreLoader {
 
             KeyPair keyPair = SelfSignedCertificateGenerator.generateRsaKeyPair(2048);
 
-            String applicationUri = "urn:eclipse:milo:examples:server:" + UUID.randomUUID();
+            String applicationUri = "urn:bbv:fischer:color-sorter-server:" + UUID.randomUUID();
 
             SelfSignedCertificateBuilder builder = new SelfSignedCertificateBuilder(keyPair)
-                .setCommonName("Eclipse Milo Example Server")
+                .setCommonName("Eclipse Milo Color Sorter Server")
                 .setOrganization("digitalpetri")
                 .setOrganizationalUnit("dev")
                 .setLocalityName("Folsom")

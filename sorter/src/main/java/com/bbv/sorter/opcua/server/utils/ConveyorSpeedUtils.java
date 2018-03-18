@@ -46,7 +46,7 @@ public interface ConveyorSpeedUtils {
     }
 
 
-    static UaVariableNode addSpeedInticatorInstanceDeclaration(UaObjectTypeNode conveyorTypeNode, OpcUaServer server, UShort namespaceIndex) {
+    static UaVariableNode addSpeedIndicatorInstanceDeclaration(UaObjectTypeNode conveyorTypeNode, OpcUaServer server, UShort namespaceIndex) {
 
         NodeId nodeId = new NodeId(namespaceIndex, "Sorter/Conveyor.SpeedIndicator");
         UByte ubyte = ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE));

@@ -111,7 +111,7 @@ public class SorterServer {
                 CertificateUtil.getSubjectAltNameField(certificate, CertificateUtil.SUBJECT_ALT_NAME_URI)
                     .map(Object::toString)
                     .orElseThrow(() -> new RuntimeException("certificate is missing the application URI")))
-            .orElse("urn:eclipse:milo:examples:server:" + UUID.randomUUID());
+            .orElse("urn:bbv:fischer:color-sorter-server:" + UUID.randomUUID());
 
         OpcUaServerConfig serverConfig = OpcUaServerConfig.builder()
             .setApplicationUri(applicationUri)
@@ -123,8 +123,8 @@ public class SorterServer {
             .setBuildInfo(
                 new BuildInfo(
                     "urn:bbv:fischer:color-sorter-server",
-                    "eclipse",
-                    "eclipse milo example server",
+                    "bbv",
+                    "eclipse milo color sorter server",
                     OpcUaServer.SDK_VERSION,
                     "", DateTime.now()))
             .setCertificateManager(certificateManager)

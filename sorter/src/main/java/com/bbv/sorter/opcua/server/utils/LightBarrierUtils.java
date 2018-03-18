@@ -25,7 +25,7 @@ public interface LightBarrierUtils {
 
 
     static void addLightBarriers(UaObjectNode conveyor, OpcUaServer server, UShort namespaceIndex ) {
-        addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB1", "LB1 Handover Position Conveyor", "Handover of Color Buttons", getReadLBDelegate(Conveyor::readLightBarrier1));
+        addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB1", "LB1 Handover Pickup Position Conveyor", "Handover of Color Buttons", getReadLBDelegate(Conveyor::readLightBarrier1));
         addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB2", "LB2 Control Position Conveyor", "Control Position after detection of Color Buttons", getReadLBDelegate(Conveyor::readLightBarrier2));
         addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB3", "LB3 Reject Position Conveyor", "Reject position of bad read Buttons", getReadLBDelegate(Conveyor::readLightBarrier3));
 
