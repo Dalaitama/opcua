@@ -38,12 +38,12 @@ public class WriteExample implements ClientExample {
         // synchronous connect
         client.connect().get();
         UShort index = client.getNamespaceTable().getIndex("urn:bbv:fischer:color-sorter");
-        NodeId nodeId = new NodeId(index, "Sorter/Conveyor.Mode");
+        NodeId nodeId = new NodeId(index, "Sorter/Conveyor/ColorDetector");
 
         List<NodeId> nodeIds = ImmutableList.of(nodeId);
 
 
-        Variant v = new Variant(LocalizedText.english("STARTED"));
+        Variant v = new Variant("1");
 
         // don't write status or timestamps
         DataValue dv = new DataValue(v, null, null);

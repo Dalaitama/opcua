@@ -43,7 +43,7 @@ public interface CompressorNodeUtils {
         return UaObjectTypeNode.builder(server.getNodeMap())
                 .setNodeId(new NodeId(namespaceIndex, "ObjectTypes/CompressorType"))
                 .setBrowseName(new QualifiedName(namespaceIndex, "CompressorType"))
-                .setDisplayName(LocalizedText.english("ConveyorType"))
+                .setDisplayName(LocalizedText.english("CompressorType"))
                 .setDescription(LocalizedText.english("Pneumatic Compressor"))
                 .setIsAbstract(false)
                 .build();
@@ -64,6 +64,7 @@ public interface CompressorNodeUtils {
 
         valveTypeVariableNodeMode.setValue(new DataValue(new Variant(false)));
         valveTypeVariableNodeMode.setMinimumSamplingInterval(1.0);
+
         compressorTypeNode.addComponent(valveTypeVariableNodeMode);
         return valveTypeVariableNodeMode;
     }
@@ -82,14 +83,14 @@ public interface CompressorNodeUtils {
 
 
         conveyor.getComponentNodes().stream()
-                .filter(isEqualVariableNode(valve1, UaVariableNode.class)).map(x -> ((UaVariableNode) x))
-                .forEach(variable -> variable.setAttributeDelegate(ConveyorNodeUtils.getBooleanConveyorDelegate(Conveyor::readValve1)));
+                .filter(isEqualVariableNode(valve1.getBrowseName().getName(), UaVariableNode.class)).map(x -> ((UaVariableNode) x))
+                .forEach(variable -> variable.setAttributeDelegate(ConveyorNodeUtils.getAttributeDelegate(Conveyor::readValve1)));
         conveyor.getComponentNodes().stream()
-                .filter(isEqualVariableNode(valve2, UaVariableNode.class)).map(x -> ((UaVariableNode) x))
-                .forEach(variable -> variable.setAttributeDelegate(ConveyorNodeUtils.getBooleanConveyorDelegate(Conveyor::readValve2)));
+                .filter(isEqualVariableNode(valve2.getBrowseName().getName(), UaVariableNode.class)).map(x -> ((UaVariableNode) x))
+                .forEach(variable -> variable.setAttributeDelegate(ConveyorNodeUtils.getAttributeDelegate(Conveyor::readValve2)));
         conveyor.getComponentNodes().stream()
-                .filter(isEqualVariableNode(valve3, UaVariableNode.class)).map(x -> ((UaVariableNode) x))
-                .forEach(variable -> variable.setAttributeDelegate(ConveyorNodeUtils.getBooleanConveyorDelegate(Conveyor::readValve3)));
+                .filter(isEqualVariableNode(valve3.getBrowseName().getName(), UaVariableNode.class)).map(x -> ((UaVariableNode) x))
+                .forEach(variable -> variable.setAttributeDelegate(ConveyorNodeUtils.getAttributeDelegate(Conveyor::readValve3)));
 
 
         return conveyor;

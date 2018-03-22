@@ -25,9 +25,9 @@ public interface LightBarrierUtils {
 
 
     static void addLightBarriers(UaObjectNode conveyor, OpcUaServer server, UShort namespaceIndex ) {
-        addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB1", "LB1 Handover Pickup Position Conveyor", "Handover of Color Buttons", getReadLBDelegate(Conveyor::readLightBarrier1));
-        addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB2", "LB2 Control Position Conveyor", "Control Position after detection of Color Buttons", getReadLBDelegate(Conveyor::readLightBarrier2));
-        addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB3", "LB3 Reject Position Conveyor", "Reject position of bad read Buttons", getReadLBDelegate(Conveyor::readLightBarrier3));
+        addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB1", "LB1 Handover Pickup Position Conveyor", "Handover of Color Buttons", ConveyorNodeUtils.getAttributeDelegate(Conveyor::readLightBarrier1));
+        addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB2", "LB2 Control Position Conveyor", "Control Position after detection of Color Buttons", ConveyorNodeUtils.getAttributeDelegate(Conveyor::readLightBarrier2));
+        addLightBarrier(conveyor, server, namespaceIndex, "Sorter/Conveyor/LB3", "LB3 Reject Position Conveyor", "Reject position of bad read Buttons", ConveyorNodeUtils.getAttributeDelegate(Conveyor::readLightBarrier3));
 
     }
 
@@ -51,16 +51,7 @@ public interface LightBarrierUtils {
         conveyor.addComponent(node);
     }
 
-    static AttributeDelegate getReadLBDelegate(Function<Conveyor,Boolean> consumer){
-        return
-                new AttributeDelegate() {
-                    @Override
-                    public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                        return new DataValue(new Variant(consumer.apply(ConveyorFactory.getInstance())));
-                    }
-                };
 
-    }
 
 
 

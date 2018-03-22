@@ -14,8 +14,8 @@ public class ConveyorMock implements Conveyor {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private volatile boolean status = false;
-    private volatile boolean mode = false;
+    private volatile boolean status = true;
+    private volatile int mode = 0;
     private volatile boolean valve1 = false;
     private volatile boolean valve2 = false;
     private volatile boolean valve3 = false;
@@ -36,20 +36,20 @@ public class ConveyorMock implements Conveyor {
     }
 
     @Override
-    public boolean getMode() {
+    public int getMode() {
         return mode;
     }
 
     @Override
     public void start() {
         logger.info("Conveyor Started");
-        mode = true;
+        mode = 1;
     }
 
     @Override
     public void stop() {
         logger.info("Conveyor Stopped");
-        mode = false;
+        mode = 0;
     }
 
     @Override
@@ -70,7 +70,7 @@ public class ConveyorMock implements Conveyor {
 
     @Override
     public double readSpeed() {
-        return mode ? random.nextInt(10) : 0.0;
+        return mode==1 ? random.nextInt(10) : 0.0;
     }
 
     @Override
@@ -103,8 +103,13 @@ public class ConveyorMock implements Conveyor {
         valve3 = pressure;
     }
 
+    @Override
+    public int getLastProcessedColor() {
+        return  mode==1 ? random.nextInt(7) : 0;
+    }
+
     private boolean getRandomBoolean() {
-        return mode ? random.nextBoolean() : false;
+        return  mode==1 && random.nextBoolean();
     }
 
 

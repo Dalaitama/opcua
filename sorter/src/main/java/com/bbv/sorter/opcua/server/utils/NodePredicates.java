@@ -1,5 +1,6 @@
 package com.bbv.sorter.opcua.server.utils;
 
+import com.sun.istack.internal.NotNull;
 import org.eclipse.milo.opcua.sdk.server.api.nodes.Node;
 import org.eclipse.milo.opcua.sdk.server.nodes.UaVariableNode;
 
@@ -10,10 +11,7 @@ import java.util.function.Predicate;
  */
 public interface NodePredicates {
 
-      static Predicate<Node> isEqualVariableNode(UaVariableNode variableNode) {
-        return x -> x.getBrowseName().equals(variableNode.getBrowseName());
-    }
-    static Predicate<Node> isEqualVariableNode(UaVariableNode variableNode, Class<? extends Node> clazz) {
-        return x -> x.getBrowseName().equals(variableNode.getBrowseName()) && clazz.isInstance(x);
+    static Predicate<Node> isEqualVariableNode(@NotNull String browseName, Class<? extends Node> clazz) {
+        return x -> x.getBrowseName().getName().equals(browseName) && clazz.isInstance(x);
     }
 }
