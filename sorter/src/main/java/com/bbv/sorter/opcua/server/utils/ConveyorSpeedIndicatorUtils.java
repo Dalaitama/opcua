@@ -31,17 +31,6 @@ public interface ConveyorSpeedIndicatorUtils {
 
     String BROWSE_NAME_SPEED_INDICATOR = "SpeedIndicator";
 
-    static AttributeDelegate getSpeedDelegate() {
-        return new AttributeDelegate() {
-            @Override
-            public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
-                return new DataValue(new Variant(ConveyorFactory.getInstance().readSpeed()));
-            }
-        };
-
-    }
-
-
     static UaVariableNode addSpeedIndicatorInstanceDeclaration(UaObjectTypeNode conveyorTypeNode, OpcUaServer server, UShort namespaceIndex) {
 
         NodeId nodeId = new NodeId(namespaceIndex, "Sorter/Conveyor.SpeedIndicator");
